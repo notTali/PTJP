@@ -1,5 +1,6 @@
 import pandas as pd
-
+import numpy as np
+import Algorithm
 # sheets_dict = pd.read_excel('Sourthern_Line_All_Stops.xlsx', sheet_name=None, engine='openpyxl')
 
 # all_sheets = []
@@ -12,7 +13,10 @@ import pandas as pd
 # full_table.reset_index(inplace=True, drop=True)
 
 # print(full_table)
-xlsx = pd.read_excel("static/sheets/Sourthern_Line_All_Stops.xlsx", sheet_name = [3], engine='openpyxl')
-#sheet1 = xls.parse(0)
+stops = np.array(Algorithm.allstops)
+df = pd.read_excel("static/sheets/Sourthern_Line_All_Stops.xlsx", sheet_name = [2], engine='openpyxl')
+n_trains = df[2].shape[1] - 1 # total number of trains
 
-print(xlsx)
+filter_criteria = (df[2]["Column1"].isin(stops)) | (df[2]["Column1"] == "TRAIN NO.")
+df1 = df[2].loc[ filter_criteria, ["Column1", "Column2"]] #Return column 1 and 2 only
+print(df1)
