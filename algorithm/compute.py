@@ -22,6 +22,9 @@ if __name__ == '__main__':
     for node in north_stops:
         graph.add_node(node) 
     
+    # Add Nodes
+    # for i in range(23):
+
     
     #Train 3201
     graph.add_edge("CAPE TOWN", "WOODSTOCK", 3)
@@ -93,12 +96,12 @@ if __name__ == '__main__':
     startInStr = "null"
     finishInNum = 0
     finishInStr = "null"
-    for i in north_stopsInNum: 
+    for i in range(len(north_stops)): 
         if src == north_stops[i]:
-            startInNum = north_stopsInNum[i]
+            startInNum = i
             startInStr = north_stops[i]
         if end == north_stops[i]:
-            finishInNum = north_stopsInNum[i]
+            finishInNum = i
             finishInStr = north_stops[i]
         
     print("\n******************************************")
