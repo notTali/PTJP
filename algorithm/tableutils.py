@@ -20,9 +20,11 @@ print("Train Number:",train_number)
 
 data_dict = dict(zip(df1["Column1"],df1["Column2"]))
 
-test_dict = data_dict | data_dict
+dict_array = []
+dict_array.append(data_dict)
+dict_array.append(data_dict)
 #data_dict = data_dict.update(test_dict)
 
-data_json = json.dumps(data_dict, indent=4)
+data_json = json.dumps(dict_array, indent=4)
 print(data_json)
-print(test_dict)
+# print(dict_array)
