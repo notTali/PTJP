@@ -1,4 +1,4 @@
-import Algorithm
+from . import Algorithm
 
 
 allstops = [
