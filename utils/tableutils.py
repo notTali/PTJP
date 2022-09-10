@@ -9,21 +9,18 @@ import datetime
 def minutesBetween(start_time, end_time):
     (s_hr, s_min) = start_time.split(':') #s_hr, s_min : start minute and start hour
     (e_hr, e_min) = end_time.split(':') #e_hr, e_min : end minute and start hour
-
     # start and end time objects
     s_dt = datetime.timedelta(hours=int(s_hr), minutes=int(s_min))
     e_dt = datetime.timedelta(hours=int(e_hr), minutes=int(e_min))
-
     difference = e_dt - s_dt
     result = str(difference).split(":")
-    ##print(result)
     r_hr = int(result[0])
-
     if r_hr > 0:
         return r_hr*60 + int(result[1])
     else:
         return int(result[1])
 
+# To be changed: take file name as parameter.
 def getTrainData():
     stops = np.array(Algorithm.allstops)
     df = pd.read_excel("static/sheets/Sourthern_Line_All_Stops.xlsx", sheet_name = [2], engine='openpyxl')
@@ -40,7 +37,7 @@ def getTrainData():
     dict_array.append(data_dict)
     
     data_json = json.dumps(dict_array, indent=4)
-    print(data_json)
+    # print(data_json)
     return data_dict
   
 allstops = [
@@ -57,7 +54,6 @@ if __name__ == '__main__':
     
     trainStops = getTrainData()
     
-
     for key, value in trainStops.items():
         # 
         if key != "TRAIN NO.":
@@ -74,7 +70,6 @@ if __name__ == '__main__':
                 pass
                 # print("End of route!")
     
-    # print("-------**************************************-------")
     print("Please enter your starting and ending stop: ")
     src = input("Start: " )
     while src not in allstops:
