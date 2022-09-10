@@ -61,7 +61,7 @@ class Graph(object):
         self.distances[(from_node, to_node)] = distance 
         
     def printAllPathsUtil(self, u, d, visited1, path1):
-        global north_stops
+        global allstops
         global north_stopsInNum
         global pathStr
         visited1[u]= True 
@@ -70,7 +70,7 @@ class Graph(object):
         if u==d:
             pathStr =[]
             for i in path1:
-                pathStr.append(north_stops[i])
+                pathStr.append(allstops[i])
             print(pathStr)
         else: 
             for i in self.graph[u]: 
