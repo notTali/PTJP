@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'utils',
     'western_cape',
     'django_extensions',
+    'search',
 ]
 
 MIDDLEWARE = [
