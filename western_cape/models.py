@@ -1,3 +1,43 @@
 from django.db import models
+import uuid
 
 # Create your models here.
+class Line(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    title = models.CharField(max_length=200, blank=False, null=False)
+    OPERATION_DAYS = (
+        ('Wek', "Weekdays"),
+        ('Sun', "Sundays"),
+        ('Sat', "Saturdays"),
+        ('Hol', "Public Holidays"),
+    )
+    days = models.CharField(max_length=3, choices=OPERATION_DAYS, blank=True, null=True)
+    def __str__(self) :
+        return self.title
+
+class Stop(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    title = models.CharField(max_length=200, blank=False, null=False)
+    def __str__(self) :
+        return self.title
+
+class Direction(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    DIRECTION_OPTIONS = (
+        ('In', "Inbound"),
+        ('On', "Outbound"),
+    )
+    title = models.CharField(max_length=2, blank=False, null=False, choices=DIRECTION_OPTIONS)
+    line = models.ForeignKey(Line, on_delete=models.CASCADE)
+    stops = models.ManyToManyField(Stop)
+    def __str__(self) :
+        return self.line.title +" Line "+ self.title +"bound"
+
+class Route(models.Model): #can also be called a Train
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    train_number = models.CharField(max_length=10, blank=False, null=False)
+    direction_id = models.ForeignKey(Direction, on_delete=models.CASCADE)
+    stops = models.ManyToManyField(Stop)
+    
+    def __str__(self) :
+        return "Train " + self.train_number
