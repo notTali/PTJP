@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'Lines',
     'train',
     'utils',
+    'western_cape',
 ]
 
 MIDDLEWARE = [
