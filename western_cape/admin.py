@@ -5,6 +5,6 @@ from . import models
 
 admin.site.register(models.Line)
 admin.site.register(models.Direction)
-admin.site.register(models.Route)
+admin.site.register(models.Arrival)
 admin.site.register(models.Stop)
-# admin.site.register(models.Line)
+admin.site.register(models.Train)
