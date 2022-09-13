@@ -13,13 +13,14 @@ class Line(models.Model):
     )
     # direction = models.ForeignKey('Direction',default=uuid.uuid4, on_delete=models.CASCADE)
     days = models.CharField(max_length=3, choices=OPERATION_DAYS, blank=True, null=True)
-    train_stop_time = models.ForeignKey('Arrival', on_delete=models.CASCADE, blank=True, null=True)
+    # train_stop_time = models.ForeignKey('Arrival', on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self) :
         return self.title 
 
 class Stop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
     title = models.CharField(max_length=200, blank=False, null=False)
+    line = models.ForeignKey(Line, on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self) :
         return self.title
 
@@ -31,7 +32,8 @@ class Direction(models.Model):
     )
     title = models.CharField(max_length=2, blank=False, null=False, choices=DIRECTION_OPTIONS)
     stops = models.ManyToManyField(Stop)
-    line = models.ManyToManyField(Line)
+    # trains = models.ManyToManyField('Train')
+    line = models.ForeignKey(Line, on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self):
         return self.title
 
