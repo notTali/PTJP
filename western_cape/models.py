@@ -11,10 +11,11 @@ class Line(models.Model):
         ('Sat', "Saturdays"),
         ('Hol', "Public Holidays"),
     )
-    direction = models.ForeignKey('Direction',default=uuid.uuid4, on_delete=models.CASCADE)
+    # direction = models.ForeignKey('Direction',default=uuid.uuid4, on_delete=models.CASCADE)
     days = models.CharField(max_length=3, choices=OPERATION_DAYS, blank=True, null=True)
+    train_stop_time = models.ForeignKey('Arrival', on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self) :
-        return self.title
+        return self.title 
 
 class Stop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
@@ -29,10 +30,10 @@ class Direction(models.Model):
         ('On', "Outbound"),
     )
     title = models.CharField(max_length=2, blank=False, null=False, choices=DIRECTION_OPTIONS)
-    # trains = models.ForeignKey('Train', on_delete=models.CASCADE)
     stops = models.ManyToManyField(Stop)
-    def __str__(self) :
-        return self.line.title +" Line "+ self.title +"bound"
+    line = models.ManyToManyField(Line)
+    def __str__(self):
+        return self.title
 
 class Train(models.Model): #can also be called a Route
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
@@ -50,4 +51,3 @@ class Arrival(models.Model):
     platform_number = models.CharField(max_length=10, blank=True, null=True)
     def __str__(self):
         return self.arrival_time
-    
