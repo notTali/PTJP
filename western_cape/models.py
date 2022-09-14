@@ -15,12 +15,12 @@ class Line(models.Model):
     days = models.CharField(max_length=3, choices=OPERATION_DAYS, blank=True, null=True)
     # train_stop_time = models.ForeignKey('Arrival', on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self) :
-        return self.title 
+        return self.title + ": " + self.get_days_display()
 
 class Stop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
     title = models.CharField(max_length=200, blank=False, null=False)
-    line = models.ForeignKey(Line, on_delete=models.CASCADE, blank=True, null=True)
+    line = models.ManyToManyField(Line)
     def __str__(self) :
         return self.title
 
