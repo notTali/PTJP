@@ -1,3 +1,5 @@
+from itertools import count
+from os import sep
 import pandas as pd
 import numpy as np
 import json
@@ -8,6 +10,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 from search.views import getTrainData
 
+from western_cape.models import Stop, Line, Arrival, Direction, Train
+
 class Command(BaseCommand):
     help = 'Update Timetables'
 
@@ -15,24 +19,40 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
+         
+        southWek = Line.objects.get(title="Southern", days="Wek")
+        northWek = Line.objects.get(title="Northern", days="Wek")
+        malmsWek = Line.objects.get(title="Malmesbury", days="Wek")
+        centralWek = Line.objects.get(title="Central", days="Wek")
+        worcesWek = Line.objects.get(title="Worcester", days="Wek")
+        capefltsWek = Line.objects.get(title="Cape Flats", days="Wek")
+
+
+        
+
         df = pd.read_excel("static/sheets/Stops_per_Line.xlsx", engine='openpyxl')
-        print(df['North'])
+        for column in df.columns:
+            col_data = df[column]
+            aLine=None
+            if column == "Southern":
+                aLine = southWek
+            elif column == "Northern":
+                aLine = northWek
+            elif column == "Malmesbury":
+                aLine = malmsWek
+            elif column == "Central":
+                aLine = centralWek
+            elif column == "Worcester":
+                aLine = worcesWek
+            elif column == "Cape Flats":
+                aLine = capefltsWek
+            
+            for row in range(len(col_data)):
+                row_data = col_data[row]
+                if type(row_data) != float:
+                    Stop.objects.create(
+                        title=row_data,
+                    ).line.add(aLine)
 
-    # def getTrainData():
-        
-    #     df = pd.read_excel("static/sheets/Stops_per_Line.xlsx", sheet_name = [1], engine='openpyxl')
-    #     # n_trains = df[2].shape[1] - 1 # total number of trains
-
-    #     # filter_criteria = (df[2]["Column1"].isin(stops)) | (df[2]["Column1"] == "TRAIN NO.")
-    #     # df1 = df[2].loc[ filter_criteria, ["Column1", "Column2"]] #Return column 1 and 2 only
-
-    #     # train_number = df1.loc[2, "Column2"]
-    
-    #     # data_dict = dict(zip(df1["Column1"],df1["Column2"]))
-
-    #     # dict_array = []
-    #     # dict_array.append(data_dict)
-        
-    #     # data_json = json.dumps(dict_array, indent=4)
-    #     # print(data_json)
-    #     return df
+                    print(row_data, column)
+            print()
