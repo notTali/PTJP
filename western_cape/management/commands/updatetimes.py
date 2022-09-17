@@ -52,17 +52,13 @@ class Command(BaseCommand):
                         arrival_time = None
                         platform_number = None
                         
-                       
+                        if ("CAPE TOWN" in stop_name) :
+                            platform_number = cape_platform
                         if "PLATFORM" in stop_name:
                             platform_number = aTime
                             cape_platform = platform_number
-                        if ("CAPE TOWN" in stop_name) :
-                            platform_number = cape_platform
-                            
-                        elif ":" in str(aTime):
+                        if ":" in str(aTime):
                             arrival_time = aTime
-                        else:
-                            pass
                         
                         if ("TRAIN NO." in stop_name) or "PLATFORM" in stop_name:
                             pass
