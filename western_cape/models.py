@@ -3,7 +3,7 @@ import uuid
 
 # Create your models here.
 class Line(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
     title = models.CharField(max_length=200, blank=False, null=False)
     OPERATION_DAYS = (
         ('Wek', "Weekdays"),
@@ -11,21 +11,26 @@ class Line(models.Model):
         ('Sat', "Saturdays"),
         ('Hol', "Public Holidays"),
     )
+    LINE_NUMBER = (
+        (1, "ONE"),
+        (2, "TWO"),
+    )
     # direction = models.ForeignKey('Direction',default=uuid.uuid4, on_delete=models.CASCADE)
     days = models.CharField(max_length=3, choices=OPERATION_DAYS, blank=True, null=True)
+    number = models.IntegerField(default=1, blank=False, null=False, choices=LINE_NUMBER)
     # train_stop_time = models.ForeignKey('Arrival', on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self) :
         return self.title + ": " + self.get_days_display()
 
 class Stop(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
     title = models.CharField(max_length=200, blank=False, null=False)
     line = models.ManyToManyField(Line)
     def __str__(self) :
         return self.title
 
 class Direction(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
     DIRECTION_OPTIONS = (
         ('In', "Inbound"),
         ('On', "Outbound"),
@@ -35,10 +40,10 @@ class Direction(models.Model):
     # trains = models.ManyToManyField('Train')
     line = models.ForeignKey(Line, on_delete=models.CASCADE, blank=True, null=True)
     def __str__(self):
-        return self.title
+        return self.line.title + ": " + self.get_title_display()
 
 class Train(models.Model): #can also be called a Route
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
     train_number = models.CharField(max_length=10, blank=False, null=False)
     direction_id = models.ForeignKey(Direction, on_delete=models.CASCADE)
     stops = models.ManyToManyField(Stop, through='Arrival')
@@ -52,4 +57,7 @@ class Arrival(models.Model):
     arrival_time = models.CharField(max_length=6, blank=True, null=True)
     platform_number = models.CharField(max_length=10, blank=True, null=True)
     def __str__(self):
-        return self.arrival_time
+        if self.arrival_time is None:
+            return self.train.train_number + " starts at " + self.stop.title #+ self.arrival_time
+        else:
+            return self.train.train_number + " arriaves to " + self.stop.title +" at "+ self.arrival_time
