@@ -50,9 +50,10 @@ class Command(BaseCommand):
             for row in range(len(col_data)):
                 row_data = col_data[row]
                 if type(row_data) != float:
-                    Stop.objects.create(
+                    (object, created) = Stop.objects.get_or_create(
                         title=row_data,
-                    ).line.add(aLine)
+                    )
+                    object.line.add(aLine)
 
-                    print(row_data, column)
+                    print(row_data, "Added................", created)
             print()
