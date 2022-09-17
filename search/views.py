@@ -3,18 +3,19 @@ import numpy as np
 import json
 import datetime
 from collections import defaultdict, deque
-
+from django.db.models import Count
 from django.shortcuts import render, redirect
 from .forms import SearchForm
 from .models import Search
 from western_cape.models import Stop, Line, Arrival, Direction, Train
+from django.db.models import Q
 
+# Stop names
+allstops = [
+    "ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR","BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA","BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI","CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A","EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE","FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL","HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH","KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER","KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY","MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG","MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE","OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT","ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL","SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND","STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL","VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY","WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
+]
 
-# allstops = [
-#     "ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR","BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA","BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI","CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A","EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE","FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL","HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH","KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER","KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY","MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG","MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE","OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT","ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL","SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND","STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL","VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY","WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
-# ]
-
-allstops = list(Stop.objects.all())
+# allstops = list(Stop.objects.all())
 
 
 pathStr = []
@@ -198,12 +199,10 @@ def results(request):
             finishInNum = i
             finishInStr = allstops[i]
         
-    # print("\n******************************************\n")
     paths = "These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr)# in str
     g.printAllPaths(startInNum, finishInNum) # in num
 
     dist, pathss = shortest_path(graph, src, end)
-    # print("\n******************************************\n")
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
 
     print(obj.start_stop, obj.end_stop)
@@ -221,4 +220,45 @@ def SearchPage(request):
     context = {'form':form}
     return render(request, 'search.html', context)
 
+def getRoutes(start_stop, end_stop, starttime, endtime):
+   
+    southWek = Line.objects.get(title="Southern", days="Wek")
+    northWek = Line.objects.get(title="Northern", days="Wek")
+    malmsWek = Line.objects.get(title="Malmesbury", days="Wek")
+    centralWek = Line.objects.get(title="Central", days="Wek")
+    worcesWek = Line.objects.get(title="Worcester", days="Wek")
+    capefltsWek = Line.objects.get(title="Cape Flats", days="Wek")
 
+
+    inboundNorth = Direction.objects.filter(title="In").get(line=northWek)
+    outboundNorth = Direction.objects.filter(title="On").get(line=northWek)
+
+    arriveNorth = Arrival.objects.filter(train__direction_id__line=northWek).order_by('train__train_number', 'arrival_time')
+
+    # print(arriveNorth)
+
+    temp = Arrival.objects.filter(
+        train__direction_id__line=northWek
+    ).filter(
+        # train__direction_id__stops__title__startswith="WOODSTOCK"
+        Q(stop__title=start_stop) & Q(train__direction_id__stops__title__startswith=end_stop)
+        
+    ).filter(
+        # train__direction_id__stops__title__startswith="KRAAIFONTEIN"
+    ).filter(
+        arrival_time__startswith=starttime,
+        # arrival_time__endswith=endtime
+    ).order_by('train__train_number'
+    ).values('train__train_number'
+    ).annotate(count=Count('train__train_number'))
+
+    routes = []
+    for t in temp:
+        vls = list(t.values())
+        route = dict()
+        trainStops = arriveNorth.filter(train__train_number=vls[0])
+        for arrival in trainStops:
+            route[arrival.stop.title] = arrival.arrival_time
+        routes.append(route)
+    
+    return routes
