@@ -41,18 +41,19 @@ class Command(BaseCommand):
         outboundNorth = Direction.objects.filter(title="On").get(line=northWek)
 
         arriveNorth = Arrival.objects.filter(train__direction_id__line=northWek).order_by('train__train_number', 'arrival_time')
-
+        train = Train.objects.filter(stops__title="KRAAIFONTEIN")
         # print(arriveNorth)
         temp = Arrival.objects.filter(
             train__direction_id__line=northWek
         ).filter(
-            # train__direction_id__stops__title__startswith="WOODSTOCK"
-            Q(stop__title="WOODSTOCK") & Q(train__direction_id__stops__title__startswith="MAITLAND")
+            # train__direction_id__stops__title__startswith="FAURE"
+        #    Q(stop__title="FAURE")
+            # stop__title="KRAAIFONTEIN"
             
         ).filter(
-            # train__direction_id__stops__title__startswith="KRAAIFONTEIN"
+            train__stops__title="KRAAIFONTEIN"
         ).filter(
-            arrival_time__startswith="16",
+            arrival_time__startswith="",
             # arrival_time__endswith="3"
         ).order_by('train__train_number'
         ).values('train__train_number'
@@ -66,11 +67,12 @@ class Command(BaseCommand):
             trainStops = arriveNorth.filter(train__train_number=vls[0])
             for arrival in trainStops:
                 print(arrival.stop.title, arrival.arrival_time)
-                route[arrival.stop.title] = arrival.arrival_time
+                route[arrival.stop.title] = str(arrival.arrival_time)
             routes.append(route)
             print(route)
             print()
         # print(routes, len(temp))
+        print(len(train))
         
 # Code to get stops in any line
         # df = pd.read_excel("static/sheets/Stops_per_Line.xlsx", engine='openpyxl')
@@ -96,3 +98,4 @@ class Command(BaseCommand):
         #         if type(row_data) != float:
         #             print(row_data)
         #     print()
+    
