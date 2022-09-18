@@ -42,11 +42,17 @@ class Direction(models.Model):
     def __str__(self):
         return self.line.title + ": " + self.get_title_display()
 
+class TrainStop(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
+    only_stops_at = models.ForeignKey(Stop, on_delete=models.DO_NOTHING, blank=True, null=True)
+
+
 class Train(models.Model): #can also be called a Route
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
     train_number = models.CharField(max_length=10, blank=False, null=False)
     direction_id = models.ForeignKey(Direction, on_delete=models.CASCADE)
     stops = models.ManyToManyField(Stop, through='Arrival')
+    train_stops = models.ManyToManyField(TrainStop)
     
     def __str__(self) :
         return "Train " + self.train_number
