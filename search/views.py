@@ -98,13 +98,23 @@ def shortest_path(graph, origin, destination):
 '''Returns the number of minutes between start and end time'''
 # EXAMPLE startime = "17:35"
 def minutesBetween(start_time, end_time):
+    start_time = str(start_time)
+    if len(start_time) > 5:
+        # print(start_time, "+++++++++++++++++++++++++")
+        start_time = start_time.replace(start_time[0:11], "").replace(start_time[16:],"")
+        # print("New ===== ", start_time, type(start_time))
+
     (s_hr, s_min) = start_time.split(':') #s_hr, s_min : start minute and start hour
     (e_hr, e_min) = end_time.split(':') #e_hr, e_min : end minute and start hour
     # start and end time objects
     s_dt = datetime.timedelta(hours=int(s_hr), minutes=int(s_min))
     e_dt = datetime.timedelta(hours=int(e_hr), minutes=int(e_min))
     difference = e_dt - s_dt
+    result = ""
+    if "-" in str(difference):
+        difference = "0:00:00"
     result = str(difference).split(":")
+    # print(e_dt, " - ", e_dt," =  ",difference, result)
     r_hr = int(result[0])
     if r_hr > 0:
         return r_hr*60 + int(result[1])
@@ -112,24 +122,24 @@ def minutesBetween(start_time, end_time):
         return int(result[1])
 
 # To be changed: take file name as parameter.
-def getTrainData(filename):
-    stops = np.array(allstops)
-    df = pd.read_excel(filename, sheet_name = [2], engine='openpyxl')
-    n_trains = df[2].shape[1] - 1 # total number of trains
+# def getTrainData(filename):
+#     stops = np.array(allstops)
+#     df = pd.read_excel(filename, sheet_name = [2], engine='openpyxl')
+#     n_trains = df[2].shape[1] - 1 # total number of trains
 
-    filter_criteria = (df[2]["Column1"].isin(stops)) | (df[2]["Column1"] == "TRAIN NO.")
-    df1 = df[2].loc[ filter_criteria, ["Column1", "Column2"]] #Return column 1 and 2 only
+#     filter_criteria = (df[2]["Column1"].isin(stops)) | (df[2]["Column1"] == "TRAIN NO.")
+#     df1 = df[2].loc[ filter_criteria, ["Column1", "Column2"]] #Return column 1 and 2 only
 
-    train_number = df1.loc[2, "Column2"]
+#     train_number = df1.loc[2, "Column2"]
   
-    data_dict = dict(zip(df1["Column1"],df1["Column2"]))
+#     data_dict = dict(zip(df1["Column1"],df1["Column2"]))
 
-    dict_array = []
-    dict_array.append(data_dict)
+#     dict_array = []
+#     dict_array.append(data_dict)
     
-    data_json = json.dumps(dict_array, indent=4)
-    # print(data_json)
-    return data_dict
+#     data_json = json.dumps(dict_array, indent=4)
+#     # print(data_json)
+#     return data_dict
       
 
 # Create your views here.
@@ -143,50 +153,46 @@ def results(request):
     for node in allstops:
         graph.add_node(node) 
     
-    trainStops = getTrainData("static/sheets/Sourthern_Line_All_Stops.xlsx")
+    # trainStops = getTrainData("static/sheets/Sourthern_Line_All_Stops.xlsx")
+    routes = getRoutes(strt, ens, "1", "")
     
-    for key, value in trainStops.items():
-        # 
-        if key != "TRAIN NO.":
-           
-            temp = list(trainStops)
-            try:
-                res = temp[temp.index(key) + 1]
-            except (ValueError, IndexError):
-                res = None
-            
-            if res is not None:
-                # write algorithm to get the start + end time from the provided time, if no time use the time at the start of the DB (ONLY consider times at the inputted stop)
-                # This will also determine which train is being used and the line.
-                graph.add_edge(key, res, minutesBetween(trainStops[key],trainStops[res])) 
-            else:
-                pass
-                # print("End of route!")
+    # for r in routes:
+    for key, value in routes.items():
+        temp = list(routes)
+        try:
+            res = temp[temp.index(key) + 1]
+        except (ValueError, IndexError):
+            res = None
+        if res is not None:
+            # write algorithm to get the start + end time from the provided time, if no time use the time at the start of the DB (ONLY consider times at the inputted stop)
+            # This will also determine which train is being used and the line.
+            # print(r[key], r[res])
+            graph.add_edge(key, res, minutesBetween(routes[key],routes[res])) 
+        else:
+            pass
+            # print("End of route!")
     
     print("Please enter your starting and ending stop: ")
-    src = obj.start_stop #input("Start: " )
-    # while src not in allstops:
-    #     src = input("Invalid input! Please enter another stop: ")
-    end = obj.end_stop # input("End: " )
-    # while end not in allstops:
-    #     end = input("Invalid input! Please enter another stop: ")
+    src = strt #input("Start: " )
     
-    g = Graph(len(allstops)) # 7 nodes
-
-    for key, value in trainStops.items():
-        if key != "TRAIN NO.":
-            # check if there is another stop after the current one:
-            temp = list(trainStops)
-            try:
-                res = temp[temp.index(key) + 1]
-            except (ValueError, IndexError):
-                res = None
-            if res is not None:
-                g.addEdge(allstops.index(key), allstops.index(res))
-            else:
-                pass
-                # print("End of route!")
-
+    end = ens # input("End: " )
+    
+    
+    g = Graph(len(allstops)) 
+   
+    # for r in routes:
+    for key, value in routes.items():
+        # check if there is another stop after the current one:
+        temp = list(routes)
+        try:
+            res = temp[temp.index(key) + 1]
+        except (ValueError, IndexError):
+            res = None
+        if res is not None:
+            g.addEdge(allstops.index(key), allstops.index(res))
+        else:
+            pass
+            # print("End of route!")
     startInNum = 0
     startInStr = "null"
     finishInNum = 0
@@ -205,7 +211,7 @@ def results(request):
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
 
-    print(obj.start_stop, obj.end_stop)
+    # print(obj.start_stop, obj.end_stop)
     context = {'obj':obj, 'paths':paths, 'shortest':shortest}
     return render(request, 'search-results.html', context)
 
@@ -241,7 +247,7 @@ def getRoutes(start_stop, end_stop, starttime, endtime):
         train__direction_id__line=northWek
     ).filter(
         # train__direction_id__stops__title__startswith="WOODSTOCK"
-        Q(stop__title=start_stop) & Q(train__direction_id__stops__title__startswith=end_stop)
+        Q(train__direction_id__stops__title__startswith=start_stop) & Q(train__direction_id__stops__title__startswith=end_stop)
         
     ).filter(
         # train__direction_id__stops__title__startswith="KRAAIFONTEIN"
@@ -258,7 +264,7 @@ def getRoutes(start_stop, end_stop, starttime, endtime):
         route = dict()
         trainStops = arriveNorth.filter(train__train_number=vls[0])
         for arrival in trainStops:
-            route[arrival.stop.title] = arrival.arrival_time
+            route[arrival.stop.title] = str(arrival.arrival_time)
         routes.append(route)
     
-    return routes
+    return routes[0]
