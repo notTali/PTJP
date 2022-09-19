@@ -31,6 +31,7 @@ class Command(BaseCommand):
         
 
         df = pd.read_excel("static/sheets/Stops_per_Line.xlsx", engine='openpyxl')
+
         for column in df.columns:
             col_data = df[column]
             aLine=None
