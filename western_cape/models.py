@@ -23,7 +23,7 @@ class Line(models.Model):
         return self.title + ": " + self.get_days_display()
 
 class Stop(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
     title = models.CharField(max_length=200, blank=False, null=False)
     line = models.ManyToManyField(Line)
     def __str__(self) :
@@ -44,15 +44,18 @@ class Direction(models.Model):
 
 class TrainStop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
-    only_stops_at = models.ForeignKey(Stop, on_delete=models.DO_NOTHING, blank=True, null=True)
+    # arrival_time = models.CharField(max_length=6, blank=True, null=True)
+    train_number = models.CharField(max_length=10, blank=True, null=True)
+    only_stops_at =models.ManyToManyField('Arrival')
+    def __str__(self):
+        return self.train_number
 
 
 class Train(models.Model): #can also be called a Route
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
     train_number = models.CharField(max_length=10, blank=False, null=False)
     direction_id = models.ForeignKey(Direction, on_delete=models.CASCADE)
     stops = models.ManyToManyField(Stop, through='Arrival')
-    train_stops = models.ManyToManyField(TrainStop)
     
     def __str__(self) :
         return "Train " + self.train_number
