@@ -22,17 +22,25 @@ class Command(BaseCommand):
         inboundNorth = Direction.objects.filter(title="In").get(line=northWek)
         outboundNorth = Direction.objects.filter(title="On").get(line=northWek)
 
-        df = pd.read_excel("static/sheets/Area_North_directions.xlsx", engine='openpyxl', sheet_name="times")
+        inboundCentral = Direction.objects.filter(title="In").get(line=centralWek)
+        outboundCentral = Direction.objects.filter(title="On").get(line=centralWek)
+
+        df = pd.read_excel("static/sheets/Area_Central_directions.xlsx", engine='openpyxl', sheet_name="times")
         arrival_times = []
         '''
         if Train.Direction.Line == North and 
         '''
-        trains_north_outbound = Train.objects.filter(direction_id=outboundNorth)
-        all_north_stops = Stop.objects.filter(line=northWek)
+        trains_north_outbound = Train.objects.filter(direction_id=outboundCentral)
+        all_north_stops = Stop.objects.filter(line=centralWek)
 
         cape_platform = None
         stopsInLine = df['column1']
         arrival_times.clear()
+        
+        # Arrival.objects.filter(
+        #     train__direction_id=outboundCentral
+        # ).all().delete()
+        
         for column in df:
             # print(zip(df[column],df[column].index))
             if column == "column1":
@@ -58,6 +66,9 @@ class Command(BaseCommand):
                             platform_number = aTime
                             cape_platform = platform_number
                         if ":" in str(aTime):
+                            if len(str(aTime)) > 5:
+                                aTime = aTime.replace(aTime[0:11], "").replace(aTime[16:],"")
+                                # print("FIXED -------------", aTime)
                             arrival_time = aTime
                         
                         if ("TRAIN NO." in stop_name) or "PLATFORM" in stop_name:
@@ -73,15 +84,21 @@ class Command(BaseCommand):
                                 arrival_time=arrival_time,
                                 platform_number=platform_number
                             )
-
+                            if not Arrival.objects.filter(stop=stop_object,train=train_object).exists():
+                                arrival.save()
                             arrival_times.append(arrival)
 
 
                           
-                print(len(arrival_times))
-                print('adding to database.....') 
-                Arrival.objects.all().delete()
-                Arrival.objects.bulk_create(arrival_times)
+                # print(len(arrival_times))
+                # print('adding to database.....') 
+                
+                # Arrival.objects.bulk_create(arrival_times)
+
+                # Arrival.objects.filter(
+                #     train__direction_id=outboundCentral
+                # ).all().delete()
+
                 # if column == "column10":
                 #     break  
                 # 
