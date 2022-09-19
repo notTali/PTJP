@@ -100,9 +100,7 @@ def shortest_path(graph, origin, destination):
 def minutesBetween(start_time, end_time):
     start_time = str(start_time)
     if len(start_time) > 5:
-        # print(start_time, "+++++++++++++++++++++++++")
         start_time = start_time.replace(start_time[0:11], "").replace(start_time[16:],"")
-        # print("New ===== ", start_time, type(start_time))
 
     (s_hr, s_min) = start_time.split(':') #s_hr, s_min : start minute and start hour
     (e_hr, e_min) = end_time.split(':') #e_hr, e_min : end minute and start hour
