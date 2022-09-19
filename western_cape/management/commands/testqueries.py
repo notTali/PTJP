@@ -2,7 +2,7 @@ from multiprocessing.resource_sharer import stop
 import pandas as pd
 import numpy as np
 from django.core.management.base import BaseCommand, CommandError
-from western_cape.models import Stop, Line, Arrival, Direction, Train
+from western_cape.models import Stop, Line, Arrival, Direction, Train, TrainStop
 from django.db.models import Count
 from django.db.models import Q
 import datetime
@@ -41,61 +41,41 @@ class Command(BaseCommand):
         outboundNorth = Direction.objects.filter(title="On").get(line=northWek)
 
         arriveNorth = Arrival.objects.filter(train__direction_id__line=northWek).order_by('train__train_number', 'arrival_time')
-        train = Train.objects.filter(stops__title="KRAAIFONTEIN")
-        # print(arriveNorth)
-        temp = Arrival.objects.filter(
-            train__direction_id__line=northWek
+        
+        trainTest = Train.objects.filter(
+            Q(stops__title__contains="VASCO")
+        ).values_list('train_number', flat=True)
+        trainTest1 = Train.objects.filter(
+            Q(stops__title__contains="SOMERSET WEST")
+        ).values_list('train_number', flat=True)
+        
+        # print(trainTest)
+        # print()
+        # print(trainTest1)
+
+        matches = set(list(trainTest)) & set(list(trainTest1))
+
+        arrivals = Arrival.objects.filter(
+            train__train_number__in=matches
         ).filter(
-            # train__direction_id__stops__title__startswith="FAURE"
-        #    Q(stop__title="FAURE")
-            # stop__title="KRAAIFONTEIN"
-            
-        ).filter(
-            train__stops__title="KRAAIFONTEIN"
-        ).filter(
-            arrival_time__startswith="",
-            # arrival_time__endswith="3"
-        ).order_by('train__train_number'
-        ).values('train__train_number'
-        ).annotate(count=Count('train__train_number'))
+            arrival_time__startswith="17",
+            # arrival_time__endswith=endtime
+        ).order_by(
+            'train__train_number'
+        ).values(
+            'train__train_number'
+        ).annotate(
+            count=Count('train__train_number')
+        )
         
         routes = []
-        for t in temp:
-            vls = list(t.values())
-            # print(list(t.values()))
+        for arrival in arrivals:
+            values = list(arrival.values())
             route = dict()
-            trainStops = arriveNorth.filter(train__train_number=vls[0])
+            trainStops = arriveNorth.filter(train__train_number=values[0])
             for arrival in trainStops:
-                print(arrival.stop.title, arrival.arrival_time)
                 route[arrival.stop.title] = str(arrival.arrival_time)
+            print(route)    
             routes.append(route)
-            print(route)
             print()
-        # print(routes, len(temp))
-        print(len(train))
-        
-# Code to get stops in any line
-        # df = pd.read_excel("static/sheets/Stops_per_Line.xlsx", engine='openpyxl')
-        # for column in df.columns:
-        #     col_data = df[column]
-        #     aLine=None
-        #     if column == "Southern":
-        #         aLine = southWek
-        #     elif column == "Northern":
-        #         aLine = northWek
-        #     elif column == "Malmesbury":
-        #         aLine = malmsWek
-        #     elif column == "Central":
-        #         aLine = centralWek
-        #     elif column == "Worcester":
-        #         aLine = worcesWek
-        #     elif column == "Cape Flats":
-        #         aLine = capefltsWek
-            
-        #     print(aLine.title)
-        #     for row in range(len(col_data)):
-        #         row_data = col_data[row]
-        #         if type(row_data) != float:
-        #             print(row_data)
-        #     print()
-    
+        print(len(routes))
