@@ -18,17 +18,19 @@ class Command(BaseCommand):
         capefltsWek = Line.objects.get(title="Cape Flats", days="Wek")
 
         northStops = Stop.objects.filter(line=northWek)
-        # print(northStops)
+        centralStops = Stop.objects.filter(line=centralWek)
+        # print(centralStops)
 
         # Inbound
         (object, created)=Direction.objects.get_or_create(
             title="In",
-            line=northWek
+            line=centralWek
         )
-        object.stops.set(northStops)
+        object.stops.set(centralStops)
         # Outbound
         (returnObj, created)=Direction.objects.get_or_create(
             title="On",
-            line=northWek
+            line=centralWek
         )
-        returnObj.stops.set(northStops)
+        returnObj.stops.set(centralStops)
+
