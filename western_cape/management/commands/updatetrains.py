@@ -21,11 +21,31 @@ class Command(BaseCommand):
         inboundNorth = Direction.objects.filter(title="In").get(line=northWek)
         outboundNorth = Direction.objects.filter(title="On").get(line=northWek)
 
+        inboundCentral = Direction.objects.filter(title="In").get(line=centralWek)
+        outboundCentral = Direction.objects.filter(title="On").get(line=centralWek)
+
         df = pd.read_excel("static/sheets/Area_North_directions.xlsx", engine='openpyxl', sheet_name=None)
+        dfCentral = pd.read_excel("static/sheets/Area_Central_directions.xlsx", engine='openpyxl', sheet_name=None)
         northOutboundTrains = df["trains"]['TRAIN NO.'].values.tolist()
-        for train_number in northOutboundTrains:
+        centralOutboundTrains = dfCentral["trains"]['TRAIN NO.'].values.tolist()
+        
+
+        # North Outbound
+        # for train_number in northOutboundTrains:
+        #     Train.objects.create(
+        #         train_number=train_number,
+        #         direction_id=outboundNorth
+        #     )
+        #     print(train_number, ".............added!")
+
+        # Train.objects.filter(
+        #     direction_id=outboundCentral
+        # ).delete()
+        # Central outbound
+        for train_number in centralOutboundTrains:
             Train.objects.create(
                 train_number=train_number,
-                direction_id=outboundNorth
+                direction_id=outboundCentral
             )
             print(train_number, ".............added!")
+        
