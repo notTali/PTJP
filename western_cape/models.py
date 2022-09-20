@@ -26,6 +26,7 @@ class Stop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False)
     title = models.CharField(max_length=200, blank=False, null=False)
     line = models.ManyToManyField(Line)
+    interchange=models.BooleanField(default=False, blank=False, null=False)
     def __str__(self) :
         return self.title
 
