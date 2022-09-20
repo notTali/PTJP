@@ -7,12 +7,12 @@ from django.db.models import Count
 from django.shortcuts import render, redirect
 from .forms import SearchForm
 from .models import Search
-from western_cape.models import Stop, Line, Arrival, Direction, Train
+from western_cape.models import GraphEdge, Stop, Line, Arrival, Direction, Train
 from django.db.models import Q
 
 # Stop names
 allstops = [
-    "ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR","BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA","BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI","CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A","EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE","FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL","HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH","KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER","KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY","MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG","MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE","OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT","ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL","SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND","STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL","VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY","WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
+    "BONTEHEUWEL A","BONTEHEUWEL D", "LENTEGEUR A", "LENTEGEUR D", "MANDALAY A", "MANDALAY D","ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR","BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA","BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI","CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A","EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE","FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL","HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH","KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER","KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY","MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG","MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE","OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT","ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL","SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND","STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL","VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY","WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
 ]
 
 # allstops = list(Stop.objects.all())
@@ -143,6 +143,7 @@ def minutesBetween(start_time, end_time):
 # Create your views here.
 def results(request):
     obj = Search.objects.all()[0]
+    edges = GraphEdge.objects.all()
 
     strt = obj.start_stop
     ens = obj.end_stop
@@ -154,20 +155,23 @@ def results(request):
     # trainStops = getTrainData("static/sheets/Sourthern_Line_All_Stops.xlsx")
     routes = getRoutes(strt, ens, "1", "")
     
-    # for r in routes:
-    for key, value in routes.items():
-        temp = list(routes)
-        try:
-            res = temp[temp.index(key) + 1]
-        except (ValueError, IndexError):
-            res = None
-        if res is not None:
-            # write algorithm to get the start + end time from the provided time, if no time use the time at the start of the DB (ONLY consider times at the inputted stop)
-            # This will also determine which train is being used and the line.
-            # print(r[key], r[res])
-            graph.add_edge(key, res, minutesBetween(routes[key],routes[res])) 
-        else:
-            pass
+    for edge in edges:
+        graph.add_edge(edge.stop_from, edge.stop_to, edge.cost)
+
+    # # for r in routes:
+    # for key, value in routes.items():
+    #     temp = list(routes)
+    #     try:
+    #         res = temp[temp.index(key) + 1]
+    #     except (ValueError, IndexError):
+    #         res = None
+    #     if res is not None:
+    #         # write algorithm to get the start + end time from the provided time, if no time use the time at the start of the DB (ONLY consider times at the inputted stop)
+    #         # This will also determine which train is being used and the line.
+    #         # print(r[key], r[res])
+    #         graph.add_edge(key, res, minutesBetween(routes[key],routes[res])) 
+    #     else:
+    #         pass
             # print("End of route!")
     
     print("Please enter your starting and ending stop: ")
@@ -225,7 +229,7 @@ def SearchPage(request):
     return render(request, 'search.html', context)
 
 def getRoutes(start_stop, end_stop, starttime, endtime):
-   
+    
     southWek = Line.objects.get(title="Southern", days="Wek")
     northWek = Line.objects.get(title="Northern", days="Wek")
     malmsWek = Line.objects.get(title="Malmesbury", days="Wek")
