@@ -70,3 +70,10 @@ class Arrival(models.Model):
             return self.train.train_number + " starts at " + self.stop.title #+ self.arrival_time
         else:
             return self.train.train_number + " arriaves to " + self.stop.title +" at "+ self.arrival_time
+
+class GraphEdge(models.Model):
+    stop_from=models.CharField(max_length=200, blank=False, null=False)
+    stop_to=models.CharField(max_length=200, blank=False, null=False)
+    cost=models.IntegerField(default=0, blank=False, null=False)
+    def __str__(self) :
+        return self.stop_from + "   --->   " + self.stop_to + "   =   " + str(self.cost)
