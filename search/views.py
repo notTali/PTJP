@@ -36,6 +36,8 @@ allstops = [
 
 
 pathStr = []
+
+routes = []
 class Graph(object):
     def __init__(self,vertices):
         self.V= vertices 
@@ -51,6 +53,8 @@ class Graph(object):
         self.edges[from_node].append(to_node)
         self.edges[to_node].append(from_node)
         self.distances[(from_node, to_node)] = distance 
+    
+    
     def printAllPathsUtil(self, u, d, visited1, path1):
         global allstops
         global pathStr
@@ -61,18 +65,20 @@ class Graph(object):
             for i in path1:
                 pathStr.append(allstops[i])
             print(pathStr)
+            routes.append(pathStr)
         else: 
             for i in self.graph[u]: 
                 if visited1[i]==False: 
                     self.printAllPathsUtil(i, d, visited1, path1) 
-                      
+
         path1.pop() 
         visited1[u]= False
  
     def printAllPaths(self,s, d):
         visited1 =[False]*(self.V) 
-        path1 = [] 
-        self.printAllPathsUtil(s, d,visited1, path1) 
+        path1 = []
+        self.printAllPathsUtil(s, d,visited1, path1)
+        
 
 def dijkstra(graph, initial):
     visited = {initial: 0} #dictionary
@@ -136,27 +142,6 @@ def minutesBetween(start_time, end_time):
     else:
         return int(result[1])
 
-# To be changed: take file name as parameter.
-# def getTrainData(filename):
-#     stops = np.array(allstops)
-#     df = pd.read_excel(filename, sheet_name = [2], engine='openpyxl')
-#     n_trains = df[2].shape[1] - 1 # total number of trains
-
-#     filter_criteria = (df[2]["Column1"].isin(stops)) | (df[2]["Column1"] == "TRAIN NO.")
-#     df1 = df[2].loc[ filter_criteria, ["Column1", "Column2"]] #Return column 1 and 2 only
-
-#     train_number = df1.loc[2, "Column2"]
-  
-#     data_dict = dict(zip(df1["Column1"],df1["Column2"]))
-
-#     dict_array = []
-#     dict_array.append(data_dict)
-    
-#     data_json = json.dumps(dict_array, indent=4)
-#     # print(data_json)
-#     return data_dict
-      
-
 # Create your views here.
 def results(request):
     obj = Search.objects.all()[0]
@@ -168,54 +153,19 @@ def results(request):
     graph = Graph(len(allstops))
     for node in allstops:
         graph.add_node(node) 
-    
-    # trainStops = getTrainData("static/sheets/Sourthern_Line_All_Stops.xlsx")
-    # routes = getRoutes(strt, ens, "1", "")
-    
+ 
     for edge in edges:
         graph.add_edge(edge.stop_from, edge.stop_to, edge.cost)
-
-    # # for r in routes:
-    # for key, value in routes.items():
-    #     temp = list(routes)
-    #     try:
-    #         res = temp[temp.index(key) + 1]
-    #     except (ValueError, IndexError):
-    #         res = None
-    #     if res is not None:
-    #         # write algorithm to get the start + end time from the provided time, if no time use the time at the start of the DB (ONLY consider times at the inputted stop)
-    #         # This will also determine which train is being used and the line.
-    #         # print(r[key], r[res])
-    #         graph.add_edge(key, res, minutesBetween(routes[key],routes[res])) 
-    #     else:
-    #         pass
-            # print("End of route!")
     
     print("Please enter your starting and ending stop: ")
     src = strt #input("Start: " )
-    
     end = ens # input("End: " )
     
-    
     g = Graph(len(allstops)) 
-   
 
     for edge in edges:
         g.addEdge(allstops.index(edge.stop_from), allstops.index(edge.stop_to))
 
-    # for r in routes:
-    # for key, value in routes.items():
-    #     # check if there is another stop after the current one:
-    #     temp = list(routes)
-    #     try:
-    #         res = temp[temp.index(key) + 1]
-    #     except (ValueError, IndexError):
-    #         res = None
-    #     if res is not None:
-    #         g.addEdge(allstops.index(key), allstops.index(res))
-    #     else:
-    #         pass
-            # print("End of route!")
     startInNum = 0
     startInStr = "null"
     finishInNum = 0
@@ -229,6 +179,10 @@ def results(request):
             finishInStr = allstops[i]
     print("These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr))# in str
     g.printAllPaths(startInNum, finishInNum) # in num
+    print("\n\n")
+    print(routes)
+    print(len(routes))
+    # print(type(g.printAllPaths(startInNum, finishInNum)))
 
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
@@ -247,6 +201,11 @@ def SearchPage(request):
             return redirect(results)
     context = {'form':form}
     return render(request, 'search.html', context)
+
+
+
+
+
 
 def getRoutes(start_stop, end_stop, starttime, endtime):
     
