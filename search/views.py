@@ -179,16 +179,16 @@ def results(request):
             finishInStr = allstops[i]
     print("These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr))# in str
     g.printAllPaths(startInNum, finishInNum) # in num
-    print("\n\n")
-    print(routes)
-    print(len(routes))
+    print("\n")
+    # print(routes)
+    print(len(routes), "Total routes")
     # print(type(g.printAllPaths(startInNum, finishInNum)))
 
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
 
     # print(obj.start_stop, obj.end_stop)
-    context = {'obj':obj,'shortest':shortest}
+    context = {'obj':obj,'shortest':shortest, "routes":routes}
     return render(request, 'search-results.html', context)
 
 def SearchPage(request):
