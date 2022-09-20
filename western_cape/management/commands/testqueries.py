@@ -41,24 +41,40 @@ class Command(BaseCommand):
         outboundNorth = Direction.objects.filter(title="On").get(line=northWek)
 
         arriveNorth = Arrival.objects.filter(train__direction_id__line=northWek).order_by('train__train_number', 'arrival_time')
+        arriveCentral = Arrival.objects.filter(train__direction_id__line=centralWek).order_by('train__train_number', 'arrival_time')
         
+        # print(arriveCentral)
+        
+        # print(len(arriveCentral), len(arriveNorth))
+        # print(arriveNorth)
+
         trainTest = Train.objects.filter(
             Q(stops__title__contains="VASCO")
         ).values_list('train_number', flat=True)
         trainTest1 = Train.objects.filter(
-            Q(stops__title__contains="SOMERSET WEST")
+            Q(stops__title__contains="CAPE TOWN")
+        ).values_list('train_number', flat=True)
+
+
+        trainTestC = Train.objects.filter(
+            Q(stops__title__contains="NATREG")
+        ).values_list('train_number', flat=True)
+        trainTest1C = Train.objects.filter(
+            Q(stops__title__contains="LANGA")
         ).values_list('train_number', flat=True)
         
+        matchesC = set(list(trainTestC)) | set(list(trainTest1C))
+        # print(matchesC)
         # print(trainTest)
         # print()
         # print(trainTest1)
 
-        matches = set(list(trainTest)) & set(list(trainTest1))
+        matches = set(list(trainTest)) | set(list(trainTest1))
 
         arrivals = Arrival.objects.filter(
             train__train_number__in=matches
         ).filter(
-            arrival_time__startswith="17",
+            arrival_time__startswith="",
             # arrival_time__endswith=endtime
         ).order_by(
             'train__train_number'
@@ -68,6 +84,7 @@ class Command(BaseCommand):
             count=Count('train__train_number')
         )
         
+        print("----------------------------------------- Results from Area North ---------------------------------------")
         routes = []
         for arrival in arrivals:
             values = list(arrival.values())
@@ -78,4 +95,59 @@ class Command(BaseCommand):
             print(route)    
             routes.append(route)
             print()
-        print(len(routes))
+            if len(routes) == 5:
+                break
+        # print(len(routes))
+
+        '''important: DELETE DUPLICATES'''
+        # for row in Arrival.objects.filter(Q(stop__line=centralWek)).reverse():
+        #     if Arrival.objects.filter(Q(stop__line=centralWek) & Q(arrival_time=row.arrival_time) & Q(stop__title=row.stop.title) ).count() > 1:
+        #         row.delete()
+
+
+        arrives = Arrival.objects.filter(
+            Q(stop__line=centralWek) & Q(arrival_time__isnull=False)
+        ).filter(
+            train__train_number__in=matchesC,
+            arrival_time__startswith="",
+            # arrival_time__endswith=endtime
+        ).order_by(
+            # 'arrival_time',
+            'train__train_number'
+            
+        ).values(
+            'train__train_number'
+        ).annotate(
+            count=Count('train__train_number')
+        )
+
+        arrivesTest = Arrival.objects.filter(
+            Q(stop__line=centralWek) & Q(arrival_time__isnull=False)
+        )
+
+        time = None
+        # graph_data =
+        if time is None: # if the start time is not specified, return the times between all stops in the graph...
+            routes = []
+            print("----------------------------------------- Results from Area Central ----------------------------------")
+            for arrival in arrives:
+                values = list(arrival.values())
+                route = dict()
+                trainStops = arriveCentral.filter(train__train_number=values[0])
+                for arr in trainStops:
+                    route[arr.stop.title] = str(arr.arrival_time)
+                print(route)    
+                routes.append(route)
+                print()
+                if len(routes) == 6:
+                    break
+            # print((routes))
+
+
+            # stopTest = Stop.objects.filter(
+            #     Q(line=centralWek)
+            # ).values_list('title', flat=True)
+
+            # print(list(stopTest))
+            # print(len(stopTest))
+        
