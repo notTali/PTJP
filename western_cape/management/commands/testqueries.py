@@ -1,4 +1,3 @@
-from multiprocessing.resource_sharer import stop
 import pandas as pd
 import numpy as np
 from django.core.management.base import BaseCommand, CommandError
@@ -84,19 +83,19 @@ class Command(BaseCommand):
             count=Count('train__train_number')
         )
         
-        print("----------------------------------------- Results from Area North ---------------------------------------")
-        routes = []
-        for arrival in arrivals:
-            values = list(arrival.values())
-            route = dict()
-            trainStops = arriveNorth.filter(train__train_number=values[0])
-            for arrival in trainStops:
-                route[arrival.stop.title] = str(arrival.arrival_time)
-            print(route)    
-            routes.append(route)
-            print()
-            if len(routes) == 5:
-                break
+        # print("----------------------------------------- Results from Area North ---------------------------------------")
+        # routes = []
+        # for arrival in arrivals:
+        #     values = list(arrival.values())
+        #     route = dict()
+        #     trainStops = arriveNorth.filter(train__train_number=values[0])
+        #     for arrival in trainStops:
+        #         route[arrival.stop.title] = str(arrival.arrival_time)
+        #     print(route)    
+        #     routes.append(route)
+        #     print()
+        #     if len(routes) == 5:
+        #         break
         # print(len(routes))
 
         '''important: DELETE DUPLICATES'''
@@ -129,18 +128,18 @@ class Command(BaseCommand):
         # graph_data =
         if time is None: # if the start time is not specified, return the times between all stops in the graph...
             routes = []
-            print("----------------------------------------- Results from Area Central ----------------------------------")
-            for arrival in arrives:
-                values = list(arrival.values())
-                route = dict()
-                trainStops = arriveCentral.filter(train__train_number=values[0])
-                for arr in trainStops:
-                    route[arr.stop.title] = str(arr.arrival_time)
-                print(route)    
-                routes.append(route)
-                print()
-                if len(routes) == 6:
-                    break
+            # print("----------------------------------------- Results from Area Central ----------------------------------")
+            # for arrival in arrives:
+            #     values = list(arrival.values())
+            #     route = dict()
+            #     trainStops = arriveCentral.filter(train__train_number=values[0])
+            #     for arr in trainStops:
+            #         route[arr.stop.title] = str(arr.arrival_time)
+            #     print(route)    
+            #     routes.append(route)
+            #     print()
+            #     if len(routes) == 6:
+            #         break
             # print((routes))
 
 
@@ -150,4 +149,6 @@ class Command(BaseCommand):
 
             # print(list(stopTest))
             # print(len(stopTest))
-        
+            
+
+            
