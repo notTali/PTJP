@@ -12,7 +12,24 @@ from django.db.models import Q
 
 # Stop names
 allstops = [
-    "BONTEHEUWEL A","BONTEHEUWEL D", "LENTEGEUR A", "LENTEGEUR D", "MANDALAY A", "MANDALAY D","ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR","BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA","BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI","CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A","EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE","FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL","HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH","KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER","KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY","MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG","MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE","OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT","ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL","SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND","STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL","VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY","WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
+    "BONTEHEUWEL A","BONTEHEUWEL D", "LENTEGEUR A", "LENTEGEUR D", "MANDALAY A",
+     "MANDALAY D","ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR",
+     "BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA",
+     "BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI",
+     "CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A",
+     "EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE",
+     "FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL",
+     "HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH",
+     "KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER",
+     "KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY",
+     "MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG",
+     "MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE",
+     "OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT",
+     "ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL",
+     "SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND",
+     "STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL",
+     "VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY",
+     "WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
 ]
 
 # allstops = list(Stop.objects.all())
@@ -153,7 +170,7 @@ def results(request):
         graph.add_node(node) 
     
     # trainStops = getTrainData("static/sheets/Sourthern_Line_All_Stops.xlsx")
-    routes = getRoutes(strt, ens, "1", "")
+    # routes = getRoutes(strt, ens, "1", "")
     
     for edge in edges:
         graph.add_edge(edge.stop_from, edge.stop_to, edge.cost)
@@ -182,18 +199,22 @@ def results(request):
     
     g = Graph(len(allstops)) 
    
+
+    for edge in edges:
+        g.addEdge(allstops.index(edge.stop_from), allstops.index(edge.stop_to))
+
     # for r in routes:
-    for key, value in routes.items():
-        # check if there is another stop after the current one:
-        temp = list(routes)
-        try:
-            res = temp[temp.index(key) + 1]
-        except (ValueError, IndexError):
-            res = None
-        if res is not None:
-            g.addEdge(allstops.index(key), allstops.index(res))
-        else:
-            pass
+    # for key, value in routes.items():
+    #     # check if there is another stop after the current one:
+    #     temp = list(routes)
+    #     try:
+    #         res = temp[temp.index(key) + 1]
+    #     except (ValueError, IndexError):
+    #         res = None
+    #     if res is not None:
+    #         g.addEdge(allstops.index(key), allstops.index(res))
+    #     else:
+    #         pass
             # print("End of route!")
     startInNum = 0
     startInStr = "null"
@@ -206,15 +227,14 @@ def results(request):
         if end == allstops[i]:
             finishInNum = i
             finishInStr = allstops[i]
-        
-    paths = "These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr)# in str
+    print("These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr))# in str
     g.printAllPaths(startInNum, finishInNum) # in num
 
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
 
     # print(obj.start_stop, obj.end_stop)
-    context = {'obj':obj, 'paths':paths, 'shortest':shortest}
+    context = {'obj':obj,'shortest':shortest}
     return render(request, 'search-results.html', context)
 
 def SearchPage(request):
