@@ -14,8 +14,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         trainstops = TrainStop.objects.all()
-        for arrival in trainstops:
-            print(arrival)
-            for stp in arrival.only_stops_at.all():
-                print(stp.stop.title)
-            print()
+        # for arrival in trainstops:
+        #     print(arrival)
+        #     tstop = []
+        #     for stp in arrival.only_stops_at.all():
+        #         tstop.append(stp.stop)
+        #     TrainStop.objects.get(
+        #         train_number=arrival.train_number
+        #     ).stops.set(tstop)
+        #     print(arrival.train_number, "Added ....................")    
+        
