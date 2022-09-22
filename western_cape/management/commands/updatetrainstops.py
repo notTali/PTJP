@@ -17,5 +17,5 @@ class Command(BaseCommand):
         for arrival in trainstops:
             print(arrival)
             for stp in arrival.only_stops_at.all():
-                print(stp)
+                print(stp.stop.title)
             print()
