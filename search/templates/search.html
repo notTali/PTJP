@@ -1,14 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <form action="" method="post">
-      {% csrf_token %} {{form.as_p}}
-      <input type="submit" value="SEARCH" />
-    </form>
-  </body>
-</html>
+{% extends 'base.html' %} {% block title %}
+<title>PTJP | Home</title>
+{% endblock title %} {% block searchform %}
+<div class="form-center">
+  <div class="welcome">
+    <h1>Welcome to your most reliable journey planner,</h1>
+    <h2>
+      Search for routes to and from any train/bus station in the city of Cape
+      Town!
+    </h2>
+  </div>
+  <form action="" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="from">From</label>
+      {{form.start_stop}}
+    </div>
+
+    <i class="fa fa-exchange" aria-hidden="true"></i>
+    <div class="form-group">
+      <label for="to">To</label>
+      {{form.end_stop}}
+    </div>
+    <div class="form-group">
+      <label for="depart">Departure</label>
+      <input type="time" id="depart" name="depart" />
+    </div>
+    <div class="form-group">
+      <label for="arrive">Arrival</label>
+      <input type="time" id="arrive" name="arrive" />
+    </div>
+    <!-- <div class="form-group"> -->
+    <!-- <input class="search-btn" type="submit" value="Plan my journey" /> -->
+    <button type="submit">
+      Plan my journey <i class="fa fa-search" aria-hidden="true"></i>
+    </button>
+    <!-- </div> -->
+  </form>
+</div>
+{% endblock searchform %}
