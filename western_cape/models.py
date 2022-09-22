@@ -27,6 +27,7 @@ class Stop(models.Model):
     title = models.CharField(max_length=200, blank=False, null=False)
     line = models.ManyToManyField(Line)
     interchange=models.BooleanField(default=False, blank=False, null=False)
+    # switch=models.CharField(default=False)
     def __str__(self) :
         return self.title
 
@@ -45,7 +46,7 @@ class Direction(models.Model):
 
 class TrainStop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
-    # arrival_time = models.CharField(max_length=6, blank=True, null=True)
+    stops = models.ManyToManyField(Stop, null=True, blank=True)
     train_number = models.CharField(max_length=10, blank=True, null=True)
     only_stops_at =models.ManyToManyField('Arrival')
     def __str__(self):
@@ -76,5 +77,6 @@ class GraphEdge(models.Model):
     stop_from=models.CharField(max_length=200, blank=False, null=False)
     stop_to=models.CharField(max_length=200, blank=False, null=False)
     cost=models.IntegerField(default=0, blank=False, null=False)
+    lines=models.ManyToManyField(Line)
     def __str__(self) :
         return self.stop_from + "   --->   " + self.stop_to + "   =   " + str(self.cost)
