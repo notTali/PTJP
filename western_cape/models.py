@@ -46,7 +46,7 @@ class Direction(models.Model):
 
 class TrainStop(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, null=False, blank=False, unique=True)
-    stops = models.ManyToManyField(Stop, null=True, blank=True)
+    stops = models.ManyToManyField(Stop, blank=True)
     train_number = models.CharField(max_length=10, blank=True, null=True)
     only_stops_at =models.ManyToManyField('Arrival')
     def __str__(self):
