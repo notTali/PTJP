@@ -1,3 +1,4 @@
+from turtle import title
 import pandas as pd
 import numpy as np
 import json
@@ -7,36 +8,37 @@ from django.db.models import Count
 from django.shortcuts import render, redirect
 from .forms import SearchForm
 from .models import Search
-from western_cape.models import GraphEdge, Stop, Line, Arrival, Direction, Train
+from western_cape.models import GraphEdge, Stop, Line, Arrival, Direction, Train, TrainStop
 from django.db.models import Q
 
 # Stop names
-allstops = [
-    "BONTEHEUWEL A","BONTEHEUWEL D", "LENTEGEUR A", "LENTEGEUR D", "MANDALAY A",
-     "MANDALAY D","ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR",
-     "BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA",
-     "BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI",
-     "CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A",
-     "EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE",
-     "FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL",
-     "HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH",
-     "KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER",
-     "KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY",
-     "MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG",
-     "MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE",
-     "OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT",
-     "ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL",
-     "SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND",
-     "STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL",
-     "VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY",
-     "WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
-]
+# allstops = [
+#     "BONTEHEUWEL A","BONTEHEUWEL D", "LENTEGEUR A", "LENTEGEUR D", "MANDALAY A",
+#      "MANDALAY D","ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR",
+#      "BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA",
+#      "BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI",
+#      "CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A",
+#      "EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE",
+#      "FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL",
+#      "HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH",
+#      "KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER",
+#      "KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY",
+#      "MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG",
+#      "MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE",
+#      "OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT",
+#      "ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL",
+#      "SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND",
+#      "STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL",
+#      "VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY",
+#      "WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
+# ]
 
-# allstops = list(Stop.objects.all())
+allstops = list(Stop.objects.all())
 
 
 pathStr = []
 
+stop_arrival = []
 routes = []
 class Graph(object):
     def __init__(self,vertices):
@@ -91,7 +93,7 @@ def dijkstra(graph, initial):
                 if min_node is None:
                     min_node = node 
                 elif visited[node] < visited[min_node]: 
-                    min_node = node 
+                    min_node = node                 
         if min_node is None:
             break
         nodes.remove(min_node) 
@@ -108,9 +110,12 @@ def dijkstra(graph, initial):
 
 def shortest_path(graph, origin, destination): 
     visited, paths = dijkstra(graph, origin) #calling function
+    # print(paths)
     full_path = deque() # declaring deque
     _destination = paths[destination] 
     while _destination != origin: 
+        # print(origin, _destination)
+        
         full_path.appendleft(_destination) 
         _destination = paths[_destination] 
     full_path.appendleft(origin) 
@@ -147,24 +152,28 @@ def results(request):
     obj = Search.objects.all()[0]
     edges = GraphEdge.objects.all()
 
-    strt = obj.start_stop
-    ens = obj.end_stop
-    
+    strtS = Stop.objects.get(title=obj.start_stop)
+    endS = Stop.objects.get(title=obj.end_stop)
+
     graph = Graph(len(allstops))
     for node in allstops:
         graph.add_node(node) 
  
     for edge in edges:
-        graph.add_edge(edge.stop_from, edge.stop_to, edge.cost)
+        # print(edge.stop_from, edge.stop_to)
+        # print(type(edge.stop_from), type(edge.stop_to))
+        graph.add_edge( Stop.objects.get(title=edge.stop_from), Stop.objects.get(title=edge.stop_to), edge.cost)
     
-    print("Please enter your starting and ending stop: ")
-    src = strt #input("Start: " )
-    end = ens # input("End: " )
+    # print("Please enter your starting and ending stop: ")
+    
+
+    src =  strtS
+    end = endS 
     
     g = Graph(len(allstops)) 
 
     for edge in edges:
-        g.addEdge(allstops.index(edge.stop_from), allstops.index(edge.stop_to))
+        g.addEdge(allstops.index( Stop.objects.get(title=edge.stop_from) ), allstops.index( Stop.objects.get(title=edge.stop_to) ))
 
     startInNum = 0
     startInStr = "null"
@@ -178,14 +187,26 @@ def results(request):
             finishInNum = i
             finishInStr = allstops[i]
     print("These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr))# in str
+    routes.clear()
     g.printAllPaths(startInNum, finishInNum) # in num
-    print("\n")
-    # print(routes)
-    print(len(routes), "Total routes")
-    # print(type(g.printAllPaths(startInNum, finishInNum)))
-
+    
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
+    # print(shortest)
+
+    for route in routes:
+        qs = TrainStop.objects.all()
+        # for search_term in route:
+            
+        for stop in route:
+            # qs = qs.filter(only_stops_at__contains=stop)
+            print(stop)
+            a = Arrival.objects.filter(stop=stop).order_by('arrival_time', 'train__train_number')
+            for time in a:
+                print(time.train.train_number, time.arrival_time)
+            # print(a)
+            print()
+        print()
 
     # print(obj.start_stop, obj.end_stop)
     context = {'obj':obj,'shortest':shortest, "routes":routes}
