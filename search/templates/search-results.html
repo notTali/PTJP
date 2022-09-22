@@ -6,8 +6,13 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>{{obj.start_stop}}</h1>
+    <h1>{{obj.start_stop}} to {{obj.end_stop}}</h1>
     <p>{{paths}}</p>
     <h3>{{shortest}}</h3>
+
+    <h4>............. Other available routes .............</h4>
+    {% for route in routes%}
+    <p>{{route}}</p>
+    {% endfor %}
   </body>
 </html>
