@@ -193,13 +193,13 @@ def results(request):
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
 
-    possible_trains = getTrains(routes, src, "04")
-    # print(possible_trains)
+    possible_trains = getTrains(routes, src, "10")
+    print(possible_trains)
     possible_routes = []
     for train in possible_trains:
         data = getRouteData(routes, train)
         possible_routes.append(data)
-        print(data)
+        # print(data)
            
     context = {'obj':obj,'shortest':shortest, "routes":routes, "possible_routes":possible_routes}
     return render(request, 'search-results.html', context)
@@ -208,35 +208,30 @@ def results(request):
 def getTrains(routes, start, start_time):
     trains = []
     for route in routes:
-        qs = TrainStop.objects.all()            
+        '''ADDD MORE TRAINSTOPS'''
+        qs = TrainStop.objects.all()  
+        # print(route)          
         for stop in route: 
             qs = qs.filter(stops=stop) #Check if all stops are contained in the stops field
         aTrain = list(qs)
+        print(aTrain)
         for st in aTrain:
             train_stops = st.only_stops_at.filter(
-                Q(arrival_time__startswith=start_time)&Q(stop__title=start)
+                Q(arrival_time__startswith=start_time) & Q(stop__title=start)
             )
             for ts in train_stops:
                 trains.append(ts.train)
+        print()
     return trains
 
 def getRouteData(routes, train):
     route_data = dict()
     for route in routes:
-        # qs = TrainStop.objects.all()            
         for stop in route: 
-            # print(Arrival.objects.filter(
-            #     stop=stop,
-            #     train=train
-            # ))
             route_data.update(
-                {
-                    stop.title: Arrival.objects.filter(stop=stop,train=train)
-                }
+                {stop.title: Arrival.objects.filter(stop=stop,train=train)}
             )
     return route_data
-
-
 
 def SearchPage(request):
     form = SearchForm()
