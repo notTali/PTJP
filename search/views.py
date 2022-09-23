@@ -170,22 +170,32 @@ def results(request):
     g.printAllPaths(startInNum, finishInNum) # in num
     
     dist, pathss = shortest_path(graph, src, end)
-    shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
+    shortest = """
+    The shortest path from {} to {} is {} minutes with the stops:
+    {}""".format(src,end,dist,pathss)
 
-    possible_trains = getTrains(routes, src, "")
-    # print(possible_trains)
+    shortest_path_trains = getShortestPathTrains(pathss, src, "")
+    # print(shortest_path_trains)
     possible_routes = []
-    for train in possible_trains:
-        data = getRouteData(routes, train)
+    for train in shortest_path_trains:
+        data = getShortestPathData(pathss, train)
         possible_routes.append(data)
-        # data.clear()
-        # print(data)
+    print(possible_routes)
+
+
+    '''Code to determine train times on all routes'''
+    # possible_trains = getTrains(routes, src, "")
+    # possible_routes = []
+    # for train in possible_trains:
+    #     data = getRouteData(routes, train)
+    #     possible_routes.append(data)
+
     
-    context = {'obj':obj,'shortest':shortest, "routes":routes, "possible_routes":possible_routes[:10]}
+    context = {'obj':obj,'shortest':shortest, "routes":routes}
     return render(request, 'search-results.html', context)
 
 # Returns all the trains that goes to the destination stop starting at the departing stop (sorted by time)
-def getTrains(routes, start, start_time):
+# def getTrains(routes, start, start_time):
     trains = []
     for route in routes:
         '''ADDD MORE TRAINSTOPS'''
@@ -201,10 +211,40 @@ def getTrains(routes, start, start_time):
             )
             for ts in train_stops:
                 trains.append(ts.train)
-        print()
+        # print()
     return trains
 
-def getRouteData(routes, train):
+def getShortestPathTrains(route, start, start_time):
+    trains = []
+    qs = TrainStop.objects.all()  
+    # print(route)          
+    for stop in route: 
+        qs = qs.filter(stops=stop) #Check if all stops are contained in the stops field
+    aTrain = list(qs)
+    for st in aTrain:
+        train_stops = st.only_stops_at.filter(
+            Q(arrival_time__startswith=start_time) & Q(stop__title=start)
+        )
+        for ts in train_stops:
+            trains.append(ts.train)
+    # print(trains)
+    return trains
+
+def getShortestPathData(route, train):
+    route_data = dict()
+    for stop in route: 
+        # Only update if queryset.count() is > 1 
+        arr = Arrival.objects.filter(stop=stop,train=train)
+        if arr.count() >=1:
+            route_data.update(
+                {stop.title: arr}
+            )
+        else:
+            pass
+    # print(route_data)
+    # return route_data
+
+# def getRouteData(routes, train):
     route_data = dict()
     # print(train)
     for route in routes:
@@ -218,7 +258,6 @@ def getRouteData(routes, train):
                 )
             else:
                 pass
-        print()
     return route_data
 
 def SearchPage(request):
@@ -231,9 +270,6 @@ def SearchPage(request):
             return redirect(results)
     
     allLines = Line.objects.all()
-
-    print(allLines)
-
     context = {'lines':allLines,'form':form}
     return render(request, 'search.html', context)
 
