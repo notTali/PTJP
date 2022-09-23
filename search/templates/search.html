@@ -11,13 +11,13 @@
   <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="form-group">
-      <label for="from">From</label>
+      <label for="id_start_stop">From</label>
       {{form.start_stop}}
     </div>
 
     <i class="fa fa-exchange" aria-hidden="true"></i>
     <div class="form-group">
-      <label for="to">To</label>
+      <label for="id_end_stop">To</label>
       {{form.end_stop}}
     </div>
     <div class="form-group">
@@ -50,7 +50,7 @@
   <div class="line-card">
     <div class="line-hd">
       <h3>{{line.title}} Line</h3>
-      <i class="fa fa-star" aria-hidden="true"></i>
+      <i class="fa fa-star star" aria-hidden="true"></i>
     </div>
     <p class="start-finish">from to</p>
     <div class="operation">
@@ -62,5 +62,6 @@
       <p class="view-route">View Schedule</p>
     </div>
   </div>
-  {% endfor %} {% endblock content %}
+  {% endfor %}
 </div>
+{% endblock content %}
