@@ -1,27 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>{{obj.start_stop}} to {{obj.end_stop}}</h1>
-    <p>{{paths}}</p>
-    <h3>{{shortest}}</h3>
+{% extends 'base.html' %} {% block title %}
+<title>PTJP | Search Results</title>
+{% endblock title %} {% block content %}
+<h1>{{obj.start_stop}} to {{obj.end_stop}}</h1>
+<p>{{paths}}</p>
+<h3>{{shortest}}</h3>
 
-    {% for route in routes%}
-    <p>{{route}}</p>
-    {% endfor %}
+{% for route in routes%}
+<p>{{route}}</p>
+{% endfor %}
 
-    <br />
-    <br />
-    <br />
-    <h4>............. Other available routes .............</h4>
-    {% for route in possible_routes %}
-    <h6>{{route|length}}</h6>
-    <p>{{route}}</p>
-    <br />
-    {% endfor %}
-  </body>
-</html>
+<br />
+<br />
+<br />
+<h4>............. Other available routes .............</h4>
+{% for route in possible_routes %}
+<h6>{{route|length}}</h6>
+<p>{{route}}</p>
+<br />
+{% endfor %} {% endblock content %}
