@@ -46,7 +46,7 @@
 
 <div class="line-crds">
   <!-- need to pass a list of lines here -->
-  {% for line in Line.objects.all %}
+  {% for line in lines %}
   <div class="line-card">
     <div class="line-hd">
       <h3>{{line.title}} Line</h3>
@@ -62,7 +62,5 @@
       <p class="view-route">View Schedule</p>
     </div>
   </div>
-  {% endfor%}
+  {% endfor %} {% endblock content %}
 </div>
-
-{% endblock content %}
