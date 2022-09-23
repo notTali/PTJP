@@ -206,14 +206,19 @@ def getTrains(routes, start, start_time):
 
 def getRouteData(routes, train):
     route_data = dict()
-    print(train)
+    # print(train)
     for route in routes:
-        print(route)
+        # print(route)
         for stop in route: 
             # Only update if queryset.count() is > 1 
-            route_data.update(
-                {stop.title: Arrival.objects.filter(stop=stop,train=train)}
-            )
+            arr = Arrival.objects.filter(stop=stop,train=train)
+
+            if arr.count() >=1:
+                route_data.update(
+                    {stop.title: arr}
+                )
+            else:
+                pass
         print()
     return route_data
 
