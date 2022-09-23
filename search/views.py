@@ -12,27 +12,6 @@ from western_cape.models import GraphEdge, Stop, Line, Arrival, Direction, Train
 from django.db.models import Q
 
 # Stop names
-# allstops = [
-#     "BONTEHEUWEL A","BONTEHEUWEL D", "LENTEGEUR A", "LENTEGEUR D", "MANDALAY A",
-#      "MANDALAY D","ABBOTSDALE","AKASIA PARK","ARTOIS","ATHLONE","AVONDALE","BELHAR",
-#      "BELLVILLE","BELLVILLE A","BELLVILLE D","BLACKHEATH","BONTEHEUWEL","BOTHA",
-#      "BRACKENFELL","BREE RIVER","CAPE TOWN","CENTURY CITY","CHAVONNES","CHRIS HANI",
-#      "CLAREMONT","CRAWFORD","DAL JOSAFAT","DE GRENDEL","DIEPRIVIER","DU TOIT","EERSTE RIVER A",
-#      "EERSTE RIVER D","EIKENFONTEIN","ELSIES RIVER","ESPLANADE","FALSE BAY","FAURE","FIRGROVE",
-#      "FISANTKRAAL","FISH HOEK","GLENCAIRN","GOODWOOD","GOUDA","GOUDINI RD","HARFIELD RD","HAZENDAL",
-#      "HEATHFIELD","HEIDEVELD","HERMON","HUGUENOT","KALBASKRAAL","KALK BAY","KAPTEINSKLIP","KENILWORTH",
-#      "KENTEMADE","KHAYELITSHA","KLAPMUTS","KLIPHEUWEL","KOEBERG RD","KOELENHOF","KRAAIFONTEIN","KUILS RIVER",
-#      "KUYASA","LAKESIDE","LANGA","LANSDOWNE","LAVISTOWN","LENTEGEUR","LYNEDOCH","MAITLAND","MALAN","MALMESBURY",
-#      "MANDALAY","MBEKWENI","MELLISH","MELTONROSE","MIKPUNT","MITCHELLS PL.","MONTE VISTA","MOWBRAY","MUIZENBERG",
-#      "MULDERSVLEI","MUTUAL","NDABENI","NETREG","NEWLANDS","NOLUNGILE","NONKQUBELA","NYANGA","OBSERVATORY","OOSTERZEE",
-#      "OTTERY","PAARDENEILAND","PAARL","PAROW","PENTECH","PHILIPPI","PINELANDS","PLUMSTEAD","RETREAT",
-#      "ROMANS RIVER","RONDEBOSCH","ROSEBANK","SALT RIVER","SAREPTA","SIMON`S TOWN","SOETENDAL",
-#      "SOMERSET WEST","SOUTHFIELD","ST JAMES","STEENBERG","STELLENBOSCH","STEURHOF","STIKLAND",
-#      "STOCK ROAD","STRAND","SUNNY COVE","THORNTON","TULBAGHWEG","TYGERBERG","UNIBELL","VAN DER STEL",
-#      "VASCO","VLOTTENBURG","VOELVLEI","WELLINGTON","WETTON","WINTEVOGEL","WITTEBOME","WOLSELEY",
-#      "WOLTEMADE","WOODSTOCK","WORCESTER","WYNBERG","YSTERPLAAT" 
-# ]
-
 allstops = list(Stop.objects.all())
 
 
@@ -193,12 +172,13 @@ def results(request):
     dist, pathss = shortest_path(graph, src, end)
     shortest = "The shortest path from {} to {} is {} minutes with the stops: {}".format(src,end,dist,pathss)
 
-    possible_trains = getTrains(routes, src, "10")
-    print(possible_trains)
+    possible_trains = getTrains(routes, src, "")
+    # print(possible_trains)
     possible_routes = []
     for train in possible_trains:
         data = getRouteData(routes, train)
         possible_routes.append(data)
+        # data.clear()
         # print(data)
            
     context = {'obj':obj,'shortest':shortest, "routes":routes, "possible_routes":possible_routes}
@@ -214,7 +194,7 @@ def getTrains(routes, start, start_time):
         for stop in route: 
             qs = qs.filter(stops=stop) #Check if all stops are contained in the stops field
         aTrain = list(qs)
-        print(aTrain)
+        # print(aTrain)
         for st in aTrain:
             train_stops = st.only_stops_at.filter(
                 Q(arrival_time__startswith=start_time) & Q(stop__title=start)
@@ -226,11 +206,15 @@ def getTrains(routes, start, start_time):
 
 def getRouteData(routes, train):
     route_data = dict()
+    print(train)
     for route in routes:
+        print(route)
         for stop in route: 
+            # Only update if queryset.count() is > 1 
             route_data.update(
                 {stop.title: Arrival.objects.filter(stop=stop,train=train)}
             )
+        print()
     return route_data
 
 def SearchPage(request):
