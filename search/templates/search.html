@@ -5,11 +5,10 @@
   <div class="welcome">
     <h1>Welcome to your most reliable journey planner,</h1>
     <h2>
-      Search for routes to and from any train/bus station in the city of Cape
-      Town!
+      Search for routes to and from any train station in the city of Cape Town!
     </h2>
   </div>
-  <form action="" method="post">
+  <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="form-group">
       <label for="from">From</label>
@@ -25,10 +24,10 @@
       <label for="depart">Departure</label>
       <input type="time" id="depart" name="depart" />
     </div>
-    <div class="form-group">
+    <!-- <div class="form-group">
       <label for="arrive">Arrival</label>
       <input type="time" id="arrive" name="arrive" />
-    </div>
+    </div> -->
     <!-- <div class="form-group"> -->
     <!-- <input class="search-btn" type="submit" value="Plan my journey" /> -->
     <button type="submit">
@@ -37,4 +36,33 @@
     <!-- </div> -->
   </form>
 </div>
-{% endblock searchform %}
+
+{% endblock searchform %} {% block content %}
+
+<div class="main-headings">
+  <h1>Available Lines</h1>
+  <p>Plan your journey on any of these routes!</p>
+</div>
+
+<div class="line-crds">
+  <!-- need to pass a list of lines here -->
+  {% for line in Line.objects.all %}
+  <div class="line-card">
+    <div class="line-hd">
+      <h3>{{line.title}} Line</h3>
+      <i class="fa fa-star" aria-hidden="true"></i>
+    </div>
+    <p class="start-finish">from to</p>
+    <div class="operation">
+      <p>{{line.days}}</p>
+      <!-- <p>{line.times}</p> -->
+    </div>
+    <div class="stp-details">
+      <p>22 STOPS</p>
+      <p class="view-route">View Schedule</p>
+    </div>
+  </div>
+  {% endfor%}
+</div>
+
+{% endblock content %}
