@@ -13,7 +13,6 @@
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
@@ -22,6 +21,167 @@
       referrerpolicy="no-referrer"
     />
     {% block title %}{% endblock title %}
+
+    <link
+      rel="stylesheet"
+      href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script>
+      $(function () {
+        var availableTags = [
+          "BONTEHEUWEL A",
+          "BONTEHEUWEL D",
+          "LENTEGEUR A",
+          "LENTEGEUR D",
+          "MANDALAY A",
+          "MANDALAY D",
+          "ABBOTSDALE",
+          "AKASIA PARK",
+          "ARTOIS",
+          "ATHLONE",
+          "AVONDALE",
+          "BELHAR",
+          "BELLVILLE",
+          "BELLVILLE A",
+          "BELLVILLE D",
+          "BLACKHEATH",
+          "BONTEHEUWEL",
+          "BOTHA",
+          "BRACKENFELL",
+          "BREE RIVER",
+          "CAPE TOWN",
+          "CENTURY CITY",
+          "CHAVONNES",
+          "CHRIS HANI",
+          "CLAREMONT",
+          "CRAWFORD",
+          "DAL JOSAFAT",
+          "DE GRENDEL",
+          "DIEPRIVIER",
+          "DU TOIT",
+          "EERSTE RIVER A",
+          "EERSTE RIVER D",
+          "EIKENFONTEIN",
+          "ELSIES RIVER",
+          "ESPLANADE",
+          "FALSE BAY",
+          "FAURE",
+          "FIRGROVE",
+          "FISANTKRAAL",
+          "FISH HOEK",
+          "GLENCAIRN",
+          "GOODWOOD",
+          "GOUDA",
+          "GOUDINI RD",
+          "HARFIELD RD",
+          "HAZENDAL",
+          "HEATHFIELD",
+          "HEIDEVELD",
+          "HERMON",
+          "HUGUENOT",
+          "KALBASKRAAL",
+          "KALK BAY",
+          "KAPTEINSKLIP",
+          "KENILWORTH",
+          "KENTEMADE",
+          "KHAYELITSHA",
+          "KLAPMUTS",
+          "KLIPHEUWEL",
+          "KOEBERG RD",
+          "KOELENHOF",
+          "KRAAIFONTEIN",
+          "KUILS RIVER",
+          "KUYASA",
+          "LAKESIDE",
+          "LANGA",
+          "LANSDOWNE",
+          "LAVISTOWN",
+          "LENTEGEUR",
+          "LYNEDOCH",
+          "MAITLAND",
+          "MALAN",
+          "MALMESBURY",
+          "MANDALAY",
+          "MBEKWENI",
+          "MELLISH",
+          "MELTONROSE",
+          "MIKPUNT",
+          "MITCHELLS PL.",
+          "MONTE VISTA",
+          "MOWBRAY",
+          "MUIZENBERG",
+          "MULDERSVLEI",
+          "MUTUAL",
+          "NDABENI",
+          "NETREG",
+          "NEWLANDS",
+          "NOLUNGILE",
+          "NONKQUBELA",
+          "NYANGA",
+          "OBSERVATORY",
+          "OOSTERZEE",
+          "OTTERY",
+          "PAARDENEILAND",
+          "PAARL",
+          "PAROW",
+          "PENTECH",
+          "PHILIPPI",
+          "PINELANDS",
+          "PLUMSTEAD",
+          "RETREAT",
+          "ROMANS RIVER",
+          "RONDEBOSCH",
+          "ROSEBANK",
+          "SALT RIVER",
+          "SAREPTA",
+          "SIMON`S TOWN",
+          "SOETENDAL",
+          "SOMERSET WEST",
+          "SOUTHFIELD",
+          "ST JAMES",
+          "STEENBERG",
+          "STELLENBOSCH",
+          "STEURHOF",
+          "STIKLAND",
+          "STOCK ROAD",
+          "STRAND",
+          "SUNNY COVE",
+          "THORNTON",
+          "TULBAGHWEG",
+          "TYGERBERG",
+          "UNIBELL",
+          "VAN DER STEL",
+          "VASCO",
+          "VLOTTENBURG",
+          "VOELVLEI",
+          "WELLINGTON",
+          "WETTON",
+          "WINTEVOGEL",
+          "WITTEBOME",
+          "WOLSELEY",
+          "WOLTEMADE",
+          "WOODSTOCK",
+          "WORCESTER",
+          "WYNBERG",
+          "YSTERPLAAT",
+        ];
+        $("#id_start_stop").autocomplete({
+          source: function (request, response) {
+            var results = $.ui.autocomplete.filter(availableTags, request.term);
+            response(results.slice(0, 5));
+          },
+        });
+        $("#id_end_stop").autocomplete({
+          source: function (request, response) {
+            var results = $.ui.autocomplete.filter(availableTags, request.term);
+            response(results.slice(0, 5));
+          },
+        });
+      });
+    </script>
   </head>
   <body>
     <header>
@@ -36,11 +196,12 @@
           <p>LOGIN OR SIGNUP</p>
         </a>
       </nav>
+
       <div class="form-wrapper">
         {% block searchform %} {% endblock searchform %}
       </div>
     </header>
-    <main>{% block context %}{% endblock context %}</main>
-    <footer></footer>
+    <main>{% block content %}{% endblock content %}</main>
+    <footer>Designed and Developed by Talifhani</footer>
   </body>
 </html>
