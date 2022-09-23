@@ -1,15 +1,47 @@
-{% extends 'base.html' %} {% block title %}
+{% extends 'base.html' %} {% block searchform %}
+<div class="form-center">
+  <form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_start_stop">From</label>
+      <input type="text" name="" id="" />
+    </div>
+
+    <i class="fa fa-exchange" aria-hidden="true"></i>
+    <div class="form-group">
+      <label for="id_end_stop">To</label>
+      <input type="text" name="" id="" />
+    </div>
+    <div class="form-group">
+      <label for="depart">Departure</label>
+      <input type="time" id="depart" name="depart" />
+    </div>
+
+    <button type="submit">
+      Plan my journey <i class="fa fa-search" aria-hidden="true"></i>
+    </button>
+  </form>
+</div>
+
+{% endblock searchform %} {% block title %}
 <title>PTJP | Search Results</title>
 {% endblock title %} {% block content %}
 <h1>{{obj.start_stop}} to {{obj.end_stop}}</h1>
-<p>{{paths}}</p>
+<!-- <p>{{paths}}</p> -->
 <h3>{{shortest}}</h3>
 
-{% for route in routes%}
+<br />
+<h3>{{routes|length}} different paths available</h3>
+{% for route in routes %} {% if shortest == route %}
+<h6>{{route}}</h6>
+{% else %}
+<h6>{{route|length}}</h6>
 <p>{{route}}</p>
+{% endif %}
+<br />
 {% endfor %}
 
-<br />
+<!-- <br />
 <br />
 <br />
 <h4>............. Other available routes .............</h4>
@@ -17,4 +49,6 @@
 <h6>{{route|length}}</h6>
 <p>{{route}}</p>
 <br />
-{% endfor %} {% endblock content %}
+{% endfor %} -->
+
+{% endblock content %}
