@@ -180,8 +180,8 @@ def results(request):
         possible_routes.append(data)
         # data.clear()
         # print(data)
-           
-    context = {'obj':obj,'shortest':shortest, "routes":routes, "possible_routes":possible_routes}
+    
+    context = {'obj':obj,'shortest':shortest, "routes":routes, "possible_routes":possible_routes[:10]}
     return render(request, 'search-results.html', context)
 
 # Returns all the trains that goes to the destination stop starting at the departing stop (sorted by time)
@@ -212,7 +212,6 @@ def getRouteData(routes, train):
         for stop in route: 
             # Only update if queryset.count() is > 1 
             arr = Arrival.objects.filter(stop=stop,train=train)
-
             if arr.count() >=1:
                 route_data.update(
                     {stop.title: arr}
@@ -230,7 +229,12 @@ def SearchPage(request):
         if form.is_valid():
             form.save()
             return redirect(results)
-    context = {'form':form}
+    
+    allLines = Line.objects.all()
+
+    print(allLines)
+
+    context = {'lines':allLines,'form':form}
     return render(request, 'search.html', context)
 
 def getRoutes(start_stop, end_stop, starttime, endtime):
