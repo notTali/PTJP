@@ -39,6 +39,14 @@ class Command(BaseCommand):
                 # print(arrival.stop)
             # print(stops)
             
+            
+            train_stop = TrainStop(
+                train_number=train.train_number,
+            )
+            train_stop.save()
+            train_stop.stops.set(stops)
+            train_stop.only_stops_at.set(list(arrivals))
+
             print(train.train_number, "Added...........................")
 
         #     for stp in arrival.only_stops_at.all():
