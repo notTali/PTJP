@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from django.core.management.base import BaseCommand, CommandError
 from western_cape.models import Stop, Line, Arrival, Direction, Train
+from django.db.models import Q
 
 class Command(BaseCommand):
     help = 'Update Line'
@@ -37,56 +38,65 @@ class Command(BaseCommand):
         stopsInLine = df['column1']
         arrival_times.clear()
         
+        # Delete all records
         # Arrival.objects.filter(
         #     train__direction_id=outboundCentral
         # ).all().delete()
+
+        # '''important: DELETE DUPLICATES'''
+        # for row in Arrival.objects.filter(Q(stop__line=centralWek)).reverse():
+        #     if Arrival.objects.filter(Q(stop__line=centralWek) & Q(arrival_time=None) & Q(arrival_time=row.arrival_time) & Q(stop__title=row.stop.title) ).count() > 1:
+        #         print(row)
+        #         row.delete()
         
-        for column in df:
-            # print(zip(df[column],df[column].index))
-            if column == "column1":
-                pass
-            else:
-                for aTime in df[column]:
-                    if type(aTime) == float:
-                        pass
-                    elif ". " in str(aTime):
-                        pass
-                    else:
+
+        """Populate Schedules"""
+        # for column in df:
+        #     # print(zip(df[column],df[column].index))
+        #     if column == "column1":
+        #         pass
+        #     else:
+        #         for aTime in df[column]:
+        #             if type(aTime) == float:
+        #                 pass
+        #             elif ". " in str(aTime):
+        #                 pass
+        #             else:
                         
-                        position = int(df[df[column] == aTime].index[0])
-                        aTime = str(aTime).replace("'","")
-                        train_number = str(df[column][1]).replace("'","")
-                        stop_name = stopsInLine[position]
-                        arrival_time = None
-                        platform_number = None
+        #                 position = int(df[df[column] == aTime].index[0])
+        #                 aTime = str(aTime).replace("'","")
+        #                 train_number = str(df[column][1]).replace("'","")
+        #                 stop_name = stopsInLine[position]
+        #                 arrival_time = None
+        #                 platform_number = None
                         
-                        if ("CAPE TOWN" in stop_name) :
-                            platform_number = cape_platform
-                        if "PLATFORM" in stop_name:
-                            platform_number = aTime
-                            cape_platform = platform_number
-                        if ":" in str(aTime):
-                            if len(str(aTime)) > 5:
-                                aTime = aTime.replace(aTime[0:11], "").replace(aTime[16:],"")
-                                # print("FIXED -------------", aTime)
-                            arrival_time = aTime
+        #                 if ("CAPE TOWN" in stop_name) :
+        #                     platform_number = cape_platform
+        #                 if "PLATFORM" in stop_name:
+        #                     platform_number = aTime
+        #                     cape_platform = platform_number
+        #                 if ":" in str(aTime):
+        #                     if len(str(aTime)) > 5:
+        #                         aTime = aTime.replace(aTime[0:11], "").replace(aTime[16:],"")
+        #                         # print("FIXED -------------", aTime)
+        #                     arrival_time = aTime
                         
-                        if ("TRAIN NO." in stop_name) or "PLATFORM" in stop_name:
-                            pass
-                        else:
-                            # print(train_number)
-                            print(stop_name, arrival_time, train_number, platform_number)
-                            train_object = trains_north_outbound.get(train_number=train_number)
-                            stop_object = all_north_stops.get(title=stop_name)
-                            arrival = Arrival(
-                                stop=stop_object,
-                                train=train_object,
-                                arrival_time=arrival_time,
-                                platform_number=platform_number
-                            )
-                            if not Arrival.objects.filter(stop=stop_object,train=train_object).exists():
-                                arrival.save()
-                            arrival_times.append(arrival)
+        #                 if ("TRAIN NO." in stop_name) or "PLATFORM" in stop_name:
+        #                     pass
+        #                 else:
+        #                     # print(train_number)
+        #                     print(stop_name, arrival_time, train_number, platform_number)
+        #                     train_object = trains_north_outbound.get(train_number=train_number)
+        #                     stop_object = all_north_stops.get(title=stop_name)
+        #                     arrival = Arrival(
+        #                         stop=stop_object,
+        #                         train=train_object,
+        #                         arrival_time=arrival_time,
+        #                         platform_number=platform_number
+        #                     )
+        #                     if not Arrival.objects.filter(stop=stop_object,train=train_object).exists():
+        #                         arrival.save()
+        #                     arrival_times.append(arrival)
 
 
                           
