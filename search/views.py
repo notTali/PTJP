@@ -128,8 +128,16 @@ def minutesBetween(start_time, end_time):
 
 # Create your views here.
 def results(request):
+    form = SearchForm()
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        Search.objects.all().delete()
+        if form.is_valid():
+            form.save()
+            return redirect(request.path)
+
     obj = Search.objects.all()[0]
-    edges = GraphEdge.objects.all()
+    edges = GraphEdge.objects.all() # get all edges
 
     strtS = Stop.objects.get(title=obj.start_stop)
     endS = Stop.objects.get(title=obj.end_stop)
@@ -139,16 +147,11 @@ def results(request):
         graph.add_node(node) 
  
     for edge in edges:
-        # print(edge.stop_from, edge.stop_to)
-        # print(type(edge.stop_from), type(edge.stop_to))
         graph.add_edge( Stop.objects.get(title=edge.stop_from), Stop.objects.get(title=edge.stop_to), edge.cost)
     
-    # print("Please enter your starting and ending stop: ")
-    
-
     src =  strtS
     end = endS 
-    
+
     g = Graph(len(allstops)) 
 
     for edge in edges:
@@ -165,23 +168,63 @@ def results(request):
         if end == allstops[i]:
             finishInNum = i
             finishInStr = allstops[i]
-    print("These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr))# in str
+    # print("These are the all unique paths from {} to {}:\n".format(startInStr,finishInStr))# in str
     routes.clear()
     g.printAllPaths(startInNum, finishInNum) # in num
     
     dist, pathss = shortest_path(graph, src, end)
+    
+    # if YSTERPLAAT, MUTUAL, and THORNTON are in the shortest path, get trains that goes to MUTUAL and the ones that starts at Mutual.
+    YSTERPLAAT = Stop.objects.get(title="YSTERPLAAT")
+    MUTUAL = Stop.objects.get(title="MUTUAL")
+    THORNTON = Stop.objects.get(title="THORNTON")
+    
+    possible_routes = []
+
+    # Check for route type (direct/indirect)
+    if YSTERPLAAT in pathss and MUTUAL in pathss and THORNTON in pathss: # Route contains train interchanges
+        print("You have to switch trains change train")
+        sub_list_left = pathss[:pathss.index(MUTUAL)+1] # get stops for the first train
+        sub_list_right = pathss[pathss.index(MUTUAL):] # get stops for the next train
+        # print(sub_list_left,"\n", sub_list_right)
+        
+        shortest_path_trainsLeft = getShortestPathTrains(sub_list_left,src, "")
+        for train in shortest_path_trainsLeft:
+            data = getShortestPathData(sub_list_left, train)
+            # possible_routes.append(data)
+            time1 = data[len(data)-1][0].arrival_time
+        
+            # print("NEXT TRAIN")
+            # Check the end time for left and start time for right.
+            shortest_path_trainsRight = getShortestPathTrains(sub_list_right,"MUTUAL", "")
+            for train in shortest_path_trainsRight:
+                data2 = getShortestPathData(sub_list_right, train)
+                # print(data | data2)
+                # possible_routes.append( data2 )
+                
+                time2 = data2[0][0].arrival_time
+                if minutesBetween(time1, time2) > 0 and minutesBetween(time1, time2) < 5:
+                    possible_routes.append(data + data2)
+                    print(data[len(data)-1][0].train.train_number, time1,"|",data2[0][0].train.train_number , time2)
+        
+    else:
+        """No direct trains available"""
+        shortest_path_trains = getShortestPathTrains(pathss, src, "")
+        # print(shortest_path_trains)
+        # print(getShortestPathData(pathss, shortest_path_trains[0]))
+        
+        for train in shortest_path_trains:
+            data = getShortestPathData(pathss, train)
+            possible_routes.append(data)
+            
+        # print(possible_routes)
+        # print(len(possible_routes), len(shortest_path_trains))
+
     shortest = """
     The shortest path from {} to {} is {} minutes with the stops:
     {}""".format(src,end,dist,pathss)
 
-    shortest_path_trains = getShortestPathTrains(pathss, src, "")
-    # print(shortest_path_trains)
-    possible_routes = []
-    for train in shortest_path_trains:
-        data = getShortestPathData(pathss, train)
-        possible_routes.append(data)
-    print(possible_routes)
-
+    
 
     '''Code to determine train times on all routes'''
     # possible_trains = getTrains(routes, src, "")
@@ -191,7 +234,7 @@ def results(request):
     #     possible_routes.append(data)
 
     
-    context = {'obj':obj,'shortest':shortest, "routes":routes}
+    context = {'form':form,'obj':obj,'shortest':shortest, "routes":routes, "trainTimetables":possible_routes}
     return render(request, 'search-results.html', context)
 
 # Returns all the trains that goes to the destination stop starting at the departing stop (sorted by time)
@@ -214,9 +257,13 @@ def results(request):
         # print()
     return trains
 
+'''
+This method returns a list of trains that makes a direct journey 
+from the stop of departure to the destination
+'''
 def getShortestPathTrains(route, start, start_time):
     trains = []
-    qs = TrainStop.objects.all()  
+    qs = TrainStop.objects.all() #.order_by('only_stops_at__arrival_time')  
     # print(route)          
     for stop in route: 
         qs = qs.filter(stops=stop) #Check if all stops are contained in the stops field
@@ -227,22 +274,21 @@ def getShortestPathTrains(route, start, start_time):
         )
         for ts in train_stops:
             trains.append(ts.train)
+            # print(trains)
     # print(trains)
     return trains
 
 def getShortestPathData(route, train):
-    route_data = dict()
+    route_data = []
     for stop in route: 
-        # Only update if queryset.count() is > 1 
         arr = Arrival.objects.filter(stop=stop,train=train)
         if arr.count() >=1:
-            route_data.update(
-                {stop.title: arr}
+            route_data.append(
+                arr
             )
         else:
             pass
-    # print(route_data)
-    # return route_data
+    return route_data
 
 # def getRouteData(routes, train):
     route_data = dict()
@@ -273,7 +319,7 @@ def SearchPage(request):
     context = {'lines':allLines,'form':form}
     return render(request, 'search.html', context)
 
-def getRoutes(start_stop, end_stop, starttime, endtime):
+# def getRoutes(start_stop, end_stop, starttime, endtime):
     
     southWek = Line.objects.get(title="Southern", days="Wek")
     northWek = Line.objects.get(title="Northern", days="Wek")
