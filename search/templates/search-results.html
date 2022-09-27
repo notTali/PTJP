@@ -26,39 +26,51 @@
 {% endblock searchform %} {% block title %}
 <title>PTJP | Search Results</title>
 {% endblock title %} {% block content %}
-<h1>{{obj.start_stop}} to {{obj.end_stop}}</h1>
+
 <!-- <p>{{paths}}</p> -->
-<h3>{{shortest}}</h3>
+<!-- <h3>{{shortest}}</h3> -->
 
-<h2>Data for the best route</h2>
-{% for train in trainTimetables %}
+<!-- <h2>Data for the best route</h2> -->
 
-<p>{{train}}</p>
-<br />
-{% endfor %}
+<div class="results-wrapper">
+  <div class="results-heading">
+    <h2>{{obj.start_stop}} to {{obj.end_stop}}</h2>
+  </div>
+  <div class="all-routes">
+    <div class="routes-wrapper">
+      {% for train in trainTimetables %}
 
-<br />
-<br />
-<br />
-<h4>............. Other available routes .............</h4>
-<h3>{{routes|length}} different paths available</h3>
-{% for route in routes %} {% if shortest == route %}
-<h6>{{route}}</h6>
-{% else %}
-<h6>{{route|length}} STOPS</h6>
-<p>{{route}}</p>
-{% endif %}
-<br />
-{% endfor %}
+      <div class="route-card">
+        <div class="line-hd">
+          <h3>{{line.title}} Line</h3>
+          <i class="fa fa-star star" aria-hidden="true"></i>
+        </div>
+        <p class="start-finish">from to</p>
+        <div class="operation">
+          <p>{{line.days}}</p>
+          <!-- <p>{line.times}</p> -->
+        </div>
+        <div class="stp-details">
+          <p>{{train|length}} STOPS</p>
+          <p class="view-route">View Route</p>
+        </div>
+      </div>
 
-<!-- <br />
-<br />
-<br />
-<h4>............. Other available routes .............</h4>
-{% for route in possible_routes %}
-<h6>{{route|length}}</h6>
-<p>{{route}}</p>
-<br />
-{% endfor %} -->
+      <!-- <p>{{train}}</p> -->
+
+      {% endfor %}
+    </div>
+    <div class="other-routes">
+      <h4>............. Other available routes .............</h4>
+      <h3>{{routes|length}} different paths available</h3>
+      {% for route in routes %} {% if shortest == route %}
+      <h6>{{route}}</h6>
+      {% else %}
+      <h6>{{route|length}} STOPS</h6>
+      <p>{{route}}</p>
+      {% endif %} {% endfor %}
+    </div>
+  </div>
+</div>
 
 {% endblock content %}
