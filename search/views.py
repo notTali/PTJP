@@ -1,3 +1,10 @@
+import os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "PTJP.settings")
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
+from django.core import serializers
 from turtle import title
 import pandas as pd
 import numpy as np
@@ -6,10 +13,17 @@ import datetime
 from collections import defaultdict, deque
 from django.db.models import Count
 from django.shortcuts import render, redirect
+
+from western_cape.thread import SearchResultsThread
 from .forms import SearchForm
-from .models import Search
+from .models import Result, Search
 from western_cape.models import GraphEdge, Stop, Line, Arrival, Direction, Train, TrainStop
 from django.db.models import Q
+import threading
+import concurrent.futures
+from western_cape import thread
+
+
 
 # Stop names
 allstops = list(Stop.objects.all())
@@ -126,6 +140,7 @@ def minutesBetween(start_time, end_time):
     else:
         return int(result[1])
 
+i = 1
 # Create your views here.
 def results(request):
     form = SearchForm()
@@ -178,22 +193,32 @@ def results(request):
     YSTERPLAAT = Stop.objects.get(title="YSTERPLAAT")
     MUTUAL = Stop.objects.get(title="MUTUAL")
     THORNTON = Stop.objects.get(title="THORNTON")
-    
+
     possible_routes = []
 
+    Result.objects.all().delete()
+    SearchResultsThread(pathss, src).start()
+    all_results =list( Result.objects.all())
+    # testSerial = serializers.serialize("xml", Result.objects.all())
+
+    # print(testSerial)
     # Check for route type (direct/indirect)
     if YSTERPLAAT in pathss and MUTUAL in pathss and THORNTON in pathss: # Route contains train interchanges
         print("You have to switch trains change train")
         sub_list_left = pathss[:pathss.index(MUTUAL)+1] # get stops for the first train
         sub_list_right = pathss[pathss.index(MUTUAL):] # get stops for the next train
         # print(sub_list_left,"\n", sub_list_right)
-        
         shortest_path_trainsLeft = getShortestPathTrains(sub_list_left,src, "")
+       
+        # testThread(lst, sub_list_left, sub_list_right) | processTrain(train, sub_list_left, sub_list_right)
+
+        # with concurrent.futures.ThreadPoolExecutor() as executor:
+        #     print(shortest_path_trainsLeft)
+        #     executor.map(processTrain, shortest_path_trainsLeft, sub_list_left, sub_list_right)
+            
         for train in shortest_path_trainsLeft:
             data = getShortestPathData(sub_list_left, train)
-            # possible_routes.append(data)
             time1 = data[len(data)-1][0].arrival_time
-        
             # print("NEXT TRAIN")
             # Check the end time for left and start time for right.
             shortest_path_trainsRight = getShortestPathTrains(sub_list_right,"MUTUAL", "")
@@ -203,10 +228,13 @@ def results(request):
                 # possible_routes.append( data2 )
                 
                 time2 = data2[0][0].arrival_time
-                if minutesBetween(time1, time2) > 0 and minutesBetween(time1, time2) < 5:
+                if minutesBetween(time1, time2) > 1 and minutesBetween(time1, time2) < 5:
                     possible_routes.append(data + data2)
                     print(data[len(data)-1][0].train.train_number, time1,"|",data2[0][0].train.train_number , time2)
-        
+            if len(possible_routes) == 5:
+                break
+
+
     else:
         """No direct trains available"""
         shortest_path_trains = getShortestPathTrains(pathss, src, "")
@@ -234,7 +262,7 @@ def results(request):
     #     possible_routes.append(data)
 
     
-    context = {'form':form,'obj':obj,'shortest':shortest, "routes":routes, "trainTimetables":possible_routes}
+    context = {'form':form,'obj':obj,'shortest':shortest, "routes":routes, "trainTimetables":possible_routes, 'results':all_results}
     return render(request, 'search-results.html', context)
 
 # Returns all the trains that goes to the destination stop starting at the departing stop (sorted by time)
@@ -256,6 +284,18 @@ def results(request):
                 trains.append(ts.train)
         # print()
     return trains
+
+
+# def testThread(train):
+#     for train in shortest_path_trainsRight:
+#         data2 = getShortestPathData(sub_list_right, train)
+#         # print(data | data2)
+#         # possible_routes.append( data2 )
+
+#         time2 = data2[0][0].arrival_time
+#         if minutesBetween(time1, time2) > 1 and minutesBetween(time1, time2) < 5:
+#         possible_routes.append(data + data2)
+#         print(data[len(data)-1][0].train.train_number, time1,"|",data2[0][0].train.train_number , time2, ".===Thread===")
 
 '''
 This method returns a list of trains that makes a direct journey 
@@ -361,3 +401,24 @@ def SearchPage(request):
         routes.append(route)
     
     return routes[0]
+
+def processTrain(train, sub_list_left, sub_list_right):
+    print("STARTED000000000000000000000000000000000", train)
+    possible_routes =[]
+
+    data = getShortestPathData(sub_list_left, train)
+    time1 = data[len(data)-1][0].arrival_time
+    # print("NEXT TRAIN")
+    # Check the end time for left and start time for right.
+    shortest_path_trainsRight = getShortestPathTrains(sub_list_right,"MUTUAL", "")
+    for train in shortest_path_trainsRight:
+        data2 = getShortestPathData(sub_list_right, train)
+        # print(data | data2)
+        # possible_routes.append( data2 )
+        
+        time2 = data2[0][0].arrival_time
+        if minutesBetween(time1, time2) > 1 and minutesBetween(time1, time2) < 5:
+            possible_routes.append(data + data2)
+            print(data[len(data)-1][0].train.train_number, time1,"|",data2[0][0].train.train_number , time2)
+    
+            print(possible_routes)
